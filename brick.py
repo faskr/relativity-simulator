@@ -58,6 +58,7 @@ obs_in_ref = {
     'vel': np.array([v_obs_in_ref_x,0,0], dtype=np.float32),
     'time': t_obs_in_ref,
 }
+
 # Calculate brick [pieces] in observer frame
 v_ref_in_obs = -obs_in_ref['vel']
 v_brick_in_obs = v_sum(brick_in_ref['vel'], v_ref_in_obs)
