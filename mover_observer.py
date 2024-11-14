@@ -13,17 +13,20 @@ l_mov_in_mov = np.array([2,1,1])
 def mag(v):
     return np.sqrt(np.dot(v, v))
 
-def proj(u, v): # projection of u onto v, i.e. how long u is in direction of v and which way it's pointing relative to direction of v
+# Projection of u onto v: how long u is in direction of v and which way it's pointing relative to direction of v
+def proj(u, v):
     return np.dot(u, v) / np.linalg.norm(v)
 
-def abs_proj(u, v): # absolute projection of u onto v, i.e. how long u is in direction of v and which way it's pointing in dimension of v
+# Absolute projection of u onto v: how long u is in direction of v and which way it's pointing in dimension of v
+def abs_proj(u, v):
     return proj(u, np.abs(v))
+
+# Velocity addition formula
+def v_sum(v_a_in_b, v_b_in_c):
+    return (v_a_in_b + v_b_in_c) / (1 + v_a_in_b * v_b_in_c / c**2)
 
 def gamma(v):
     return 1 / np.sqrt(1 - v**2 / c**2)
-
-def v_sum(v_a_in_b, v_b_in_c):
-    return (v_a_in_b + v_b_in_c) / (1 + v_a_in_b*v_b_in_c / c**2)
 
 def contract(x, v):
     return x / gamma(v)
