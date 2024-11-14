@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+# ==== Setup ====
+
 # Speed of light
 c = 100
 
@@ -9,7 +12,10 @@ v_mov_in_ref_x = c * 0.8
 v_obs_in_ref_x = c * 0.4
 l_mov_in_mov = np.array([2,1,1])
 
-# Math functions
+
+# ==== Math functions ====
+
+# Scalar magnitude of vector
 def mag(v):
     return np.sqrt(np.dot(v, v))
 
@@ -52,6 +58,9 @@ def contract_space(s, v, t):
 
 def dilate_space(s, v, t):
     return dilate(s + s_phase(v, t), v)
+
+
+# ==== Scene ====
 
 # Set mover and observer in their own frames
 p1_in_mov = {
@@ -110,6 +119,9 @@ t_p1_in_mov = 0
 t_p1_in_obs = contract_time(t_p1_in_mov, v_p1_in_obs, p1_in_mov['pos'])
 t_p2_in_mov = t_p1_in_mov # The mover is simultaneous with itself in its own frame
 t_p2_in_obs = contract_time(t_p2_in_mov, v_p2_in_obs, p2_in_mov['pos'])
+
+
+# ==== Output ====
 
 # Print info
 print("--- reference frame ---")
