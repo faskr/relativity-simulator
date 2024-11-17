@@ -11,6 +11,7 @@ c = 100
 v_mov_in_ref_x = c * 0.8
 v_obs_in_ref_x = c * 0.4
 l_mov_in_mov = np.array([2,1,1])
+t_steps_obs = np.linspace(0, 0.04, 5)
 
 
 # ==== Math functions ====
@@ -121,6 +122,21 @@ p2_in_obs = {
 # Length of the mover in a simultaneous slice of time in the observer frame
 l_mov_in_obs_x = contract(p2_in_mov['pos'][0] - p1_in_mov['pos'][0], p1_in_obs['vel'][0])
 
+# TODO: Figure out how to do matrix multiplication to include all dimensions in the Minkowski variables below
+
+# Minkowski spacetime values
+t_p1_in_obs = p1_in_obs['time'] + t_steps_obs
+t_p2_in_obs = p2_in_obs['time'] + t_steps_obs
+s_p1_in_obs_x = p1_in_obs['pos'][0] + v_p1_in_obs[0] * t_steps_obs
+s_p2_in_obs_x = p2_in_obs['pos'][0] + v_p2_in_obs[0] * t_steps_obs
+
+# Minkowski spacetime axes
+axis_scale = 1.2
+t_axis_mov_in_obs_t = t_steps_obs * axis_scale
+t_axis_mov_in_obs_x = v_p1_in_obs[0] * t_axis_mov_in_obs_t
+x_axis_mov_in_obs_x = c * t_steps_obs * axis_scale
+x_axis_mov_in_obs_t = t_phase(v_p1_in_obs[0], x_axis_mov_in_obs_x)
+
 
 # ==== Output ====
 
@@ -163,11 +179,15 @@ ax_3d.set_ylabel('y')
 ax_3d.set_zlabel('z')
 ax_3d.set_aspect('equal')
 
-# Minkowski diagram
+# Minkowski spacetime
 ax_md = fig.add_subplot(1,2,2)
-ax_md.set_title('Minkowski Diagram')
-x = np.array([p1_in_obs['pos'][0], p2_in_obs['pos'][0]])
-ct = np.array([c*p1_in_obs['time'], c*p2_in_obs['time']])
+ax_md.set_title('Minkowski Spacetime')
+x = np.array([s_p1_in_obs_x, s_p2_in_obs_x])
+ct = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
+ax_md.plot(x_axis_mov_in_obs_x, c*x_axis_mov_in_obs_t, 'b')
+ax_md.plot(t_axis_mov_in_obs_x, c*t_axis_mov_in_obs_t, 'b')
+ax_md.plot(x, x, 'k')
+ax_md.plot(x, -x, 'k')
 ax_md.plot(x, ct, 'r')
 ax_md.set_xlabel('x')
 ax_md.set_ylabel('ct')
