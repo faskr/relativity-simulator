@@ -13,6 +13,7 @@ v_obs_in_ref_x = c * 0.4
 l_mov_in_mov = np.array([2,1,1])
 
 
+
 # ==== Math functions ====
 
 # Scalar magnitude of vector
@@ -47,17 +48,17 @@ def t_phase(v, s):
 def s_phase(v, t):
     return v * t
 
-def contract_time(t, v, s):
-    return contract(t + t_phase(v, s), mag(v))
+def dilate_space(s, v, t):
+    return dilate(s + s_phase(v, t), v)
 
 def dilate_time(t, v, s):
     return dilate(t + t_phase(v, s), mag(v))
 
-def contract_space(s, v, t):
+def contract_length(s, v, t):
     return contract(s + s_phase(v, t), v)
 
-def dilate_space(s, v, t):
-    return dilate(s + s_phase(v, t), v)
+def contract_lifespan(t, v, s):
+    return contract(t + t_phase(v, s), mag(v))
 
 
 # ==== Scene ====
@@ -83,20 +84,20 @@ obs_in_obs = {
 v_p1_in_ref = np.array([v_mov_in_ref_x,0,0], dtype=np.float32)
 p1_in_ref = {
     'vel': v_p1_in_ref,
-    'pos': contract(p1_in_mov['pos'], v_p1_in_ref),
-    'time': dilate(p1_in_mov['time'], mag(v_p1_in_ref)),
+    'pos': dilate_space(p1_in_mov['pos'], v_p1_in_ref, p1_in_mov['time']),
+    'time': dilate_time(p1_in_mov['time'], v_p1_in_ref, p1_in_mov['pos']),
 }
 v_p2_in_ref = np.array([v_mov_in_ref_x,0,0], dtype=np.float32)
 p2_in_ref = {
     'vel': v_p2_in_ref,
-    'pos': contract(p2_in_mov['pos'], v_p2_in_ref),
-    'time': dilate(p2_in_mov['time'], mag(v_p2_in_ref)),
+    'pos': dilate_space(p2_in_mov['pos'], v_p2_in_ref, p2_in_mov['time']),
+    'time': dilate_time(p2_in_mov['time'], v_p2_in_ref, p2_in_mov['pos']),
 }
 v_obs_in_ref = np.array([v_obs_in_ref_x,0,0], dtype=np.float32)
 obs_in_ref = {
     'vel': v_obs_in_ref,
-    'pos': contract(obs_in_obs['pos'], v_obs_in_ref),
-    'time': dilate(obs_in_obs['time'], mag(v_obs_in_ref)),
+    'pos': dilate_space(obs_in_obs['pos'], v_obs_in_ref, obs_in_obs['time']),
+    'time': dilate_time(obs_in_obs['time'], v_obs_in_ref, obs_in_obs['pos']),
 }
 
 # Calculate mover in observer frame
@@ -105,40 +106,40 @@ v_p1_in_obs = v_sum(p1_in_ref['vel'], v_ref_in_obs)
 v_p2_in_obs = v_sum(p2_in_ref['vel'], v_ref_in_obs)
 p1_in_obs = {
     'vel': v_p1_in_obs,
-    'pos': contract(p1_in_mov['pos'], v_p1_in_obs),
-    'time': dilate(p1_in_mov['time'], mag(v_p1_in_obs)),
+    'pos': dilate_space(p1_in_mov['pos'], v_p1_in_obs, p1_in_mov['time']),
+    'time': dilate_time(p1_in_mov['time'], v_p1_in_obs, p1_in_mov['pos']),
 }
 p2_in_obs = {
     'vel': v_p2_in_obs,
-    'pos': contract(p2_in_mov['pos'], v_p2_in_obs),
-    'time': dilate(p2_in_mov['time'], mag(v_p2_in_obs)),
+    'pos': dilate_space(p2_in_mov['pos'], v_p2_in_obs, p2_in_mov['time']),
+    'time': dilate_time(p2_in_mov['time'], v_p2_in_obs, p2_in_mov['pos']),
 }
 
 # Time/phase contraction is analogous to space/length contraction: Find the length of one dimension across a slice of the other, in the rest frame
-t_p1_in_mov = 0
-t_p1_in_obs = contract_time(t_p1_in_mov, v_p1_in_obs, p1_in_mov['pos'])
-t_p2_in_mov = t_p1_in_mov # The mover is simultaneous with itself in its own frame
-t_p2_in_obs = contract_time(t_p2_in_mov, v_p2_in_obs, p2_in_mov['pos'])
+#t_p1_in_obs_contracted = contract_lifespan(p1_in_mov['time'], v_p1_in_obs, p1_in_mov['pos'])
+#t_p2_in_obs_contracted = contract_lifespan(p2_in_mov['time'], v_p2_in_obs, p2_in_mov['pos'])
+s_p1_in_obs_contracted = contract_length(p1_in_mov['pos'], v_p1_in_obs, p1_in_mov['time'])
+s_p2_in_obs_contracted = contract_length(p2_in_mov['pos'], v_p2_in_obs, p2_in_mov['time'])
 
 
 # ==== Output ====
 
 # Print info
 print("--- reference frame ---")
-print(f"back of mover: pos = {p1_in_ref['pos'][0]:.2f}, vel = {p1_in_ref['vel'][0]:.2f}")
-print(f"front of mover: pos = {p2_in_ref['pos'][0]:.2f}, vel = {p2_in_ref['vel'][0]:.2f}")
-print(f"observer: pos = {obs_in_ref['pos'][0]:.2f}, vel = {obs_in_ref['vel'][0]:.2f}")
+print(f"back of mover: vel = {p1_in_ref['vel'][0]:.2f}, pos = {p1_in_ref['pos'][0]:.2f}, time = {p1_in_ref['time']:.2f}")
+print(f"front of mover: vel = {p2_in_ref['vel'][0]:.2f}, pos = {p2_in_ref['pos'][0]:.2f}, time = {p2_in_ref['time']:.2f}")
+print(f"observer: vel = {obs_in_ref['vel'][0]:.2f}, pos = {obs_in_ref['pos'][0]:.2f}, time = {obs_in_ref['time']:.2f}")
 print("--- mover frame ---")
-print(f"back of mover: pos = {p1_in_mov['pos'][0]:.2f}, vel = {p1_in_mov['vel'][0]:.2f}")
-print(f"front of mover: pos = {p2_in_mov['pos'][0]:.2f}, vel = {p2_in_mov['vel'][0]:.2f}")
+print(f"back of mover: vel = {p1_in_mov['vel'][0]:.2f}, pos = {p1_in_mov['pos'][0]:.2f}, time = {p1_in_mov['time']:.2f}")
+print(f"front of mover: vel = {p2_in_mov['vel'][0]:.2f}, pos = {p2_in_mov['pos'][0]:.2f}, time = {p2_in_mov['time']:.2f}")
 print("--- observer frame ---")
-print(f"back of mover: pos = {p1_in_obs['pos'][0]:.2f}, vel = {p1_in_obs['vel'][0]:.2f}")
-print(f"front of mover: pos = {p2_in_obs['pos'][0]:.2f}, vel = {p2_in_obs['vel'][0]:.2f}")
+print(f"back of mover: vel = {p1_in_obs['vel'][0]:.2f}, pos = {p1_in_obs['pos'][0]:.2f}, time = {p1_in_obs['time']:.2f}")
+print(f"front of mover: vel = {p2_in_obs['vel'][0]:.2f}, pos = {p2_in_obs['pos'][0]:.2f}, time = {p2_in_obs['time']:.2f}")
 
 # Define coordinates and grids for mover
-y_range = np.linspace(p1_in_obs['pos'][1], p1_in_obs['pos'][1] + l_mov_in_mov[1], 2)
-z_range = np.linspace(p1_in_obs['pos'][2], p1_in_obs['pos'][2] + l_mov_in_mov[2], 2)
-x_range = np.linspace(p1_in_obs['pos'][0], p2_in_obs['pos'][0] - p1_in_obs['pos'][0], 2)
+y_range = np.linspace(s_p1_in_obs_contracted[1], s_p1_in_obs_contracted[1] + l_mov_in_mov[1], 2)
+z_range = np.linspace(s_p1_in_obs_contracted[2], s_p1_in_obs_contracted[2] + l_mov_in_mov[2], 2)
+x_range = np.linspace(s_p1_in_obs_contracted[0], s_p2_in_obs_contracted[0], 2)
 sq_y, sq_z = np.meshgrid(y_range, z_range)
 rc_xy, rc_y = np.meshgrid(x_range, y_range)
 rc_xz, rc_z = np.meshgrid(x_range, z_range)
@@ -149,27 +150,39 @@ fig = plt.figure()
 fig.suptitle('Mover in Observer Frame')
 
 # Plot mover
-ax_3d = fig.add_subplot(1,2,1,projection='3d')
-ax_3d.plot_surface(rc_xy, rc_y, ones*p1_in_obs['pos'][2], color='r') # z = 0
-ax_3d.plot_surface(rc_xy, rc_y, ones*(p1_in_obs['pos'][2] + l_mov_in_mov[2]), color='r') # z = 1
-ax_3d.plot_surface(rc_xz, ones*p1_in_obs['pos'][1], rc_z, color='r') # y = 0
-ax_3d.plot_surface(rc_xz, ones*(p1_in_obs['pos'][1] + l_mov_in_mov[1]), rc_z, color='r') # y = 1
-ax_3d.plot_surface(ones*p1_in_obs['pos'][0], sq_y, sq_z, color='r') # x = 0
-ax_3d.plot_surface(ones*p2_in_obs['pos'][0], sq_y, sq_z, color='r') # x = 1
+ax_3d = fig.add_subplot(2,1,1,projection='3d')
+ax_3d.plot_surface(rc_xy, rc_y, ones*s_p1_in_obs_contracted[2], color='r') # z = 0
+ax_3d.plot_surface(rc_xy, rc_y, ones*s_p2_in_obs_contracted[2] + l_mov_in_mov[2], color='r') # z = 1
+ax_3d.plot_surface(rc_xz, ones*s_p1_in_obs_contracted[1], rc_z, color='r') # y = 0
+ax_3d.plot_surface(rc_xz, ones*s_p2_in_obs_contracted[1] + l_mov_in_mov[1], rc_z, color='r') # y = 1
+ax_3d.plot_surface(ones*s_p1_in_obs_contracted[0], sq_y, sq_z, color='r') # x = 0
+ax_3d.plot_surface(ones*s_p2_in_obs_contracted[0], sq_y, sq_z, color='r') # x = 1
 ax_3d.set_xlabel('x')
 ax_3d.set_ylabel('y')
 ax_3d.set_zlabel('z')
 ax_3d.set_aspect('equal')
 
 # Minkowski diagram
-ax_md = fig.add_subplot(1,2,2)
+ax_md = fig.add_subplot(2,1,2)
+ax_md.set_title('Minkowski Diagram')
 x = np.array([p1_in_obs['pos'][0], p2_in_obs['pos'][0]])
-t = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
-ax_md.plot(x, t, 'r')
+ct = np.array([c*p1_in_obs['time'], c*p2_in_obs['time']])
+ax_md.plot(x, ct, 'r')
 ax_md.set_xlabel('x')
-ax_md.set_ylabel('t')
+ax_md.set_ylabel('ct')
 ax_md.set_aspect('equal')
+
+# Contraction diagram
+#ax_md = fig.add_subplot(3,1,2)
+#ax_md.set_title('Contraction')
+#x = np.array([p1_in_obs['pos'][0], p2_in_obs['pos'][0]])
+#ct = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
+#ax_md.plot(x, ct, 'r')
+#ax_md.set_xlabel('x')
+#ax_md.set_ylabel('ct')
+#ax_md.set_aspect('equal')
 
 # Plot settings
 plt.subplots_adjust(wspace=0.5, hspace=0.5)
+plt.grid()
 plt.show()
