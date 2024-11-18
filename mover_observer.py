@@ -18,7 +18,17 @@ t_steps_obs = np.linspace(0, 0.04, 5)
 
 # Scalar magnitude of vector
 def mag(v):
-    return np.sqrt(np.dot(v, v))
+    return np.sqrt(np.dot(v, np.transpose(v)))
+
+# Reshape a vector into two dimensions
+def matrix_from_vec(v, transpose=False):
+    if transpose:
+        return v.reshape(v.size, 1)
+    return v.reshape(1, v.size)
+
+# Dot product of two vectors that creates a matrix
+def matrix_from_vecs(u, v):
+    return np.dot(matrix_from_vec(u, True), matrix_from_vec(v, False))
 
 # Projection of u onto v: how long u is in direction of v and which way it's pointing relative to direction of v
 def proj(u, v):
@@ -122,35 +132,33 @@ p2_in_obs = {
 # Length of the mover in a simultaneous slice of time in the observer frame
 l_mov_in_obs_x = contract(p2_in_mov['pos'][0] - p1_in_mov['pos'][0], p1_in_obs['vel'][0])
 
-# TODO: Figure out how to do matrix multiplication to include all dimensions in the Minkowski variables below
-
 # Minkowski spacetime values
 t_p1_in_obs = p1_in_obs['time'] + t_steps_obs
 t_p2_in_obs = p2_in_obs['time'] + t_steps_obs
-s_p1_in_obs_x = p1_in_obs['pos'][0] + v_p1_in_obs[0] * t_steps_obs
-s_p2_in_obs_x = p2_in_obs['pos'][0] + v_p2_in_obs[0] * t_steps_obs
+s_p1_in_obs_x = np.tile(p1_in_obs['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p1_in_obs)
+s_p2_in_obs_x = np.tile(p2_in_obs['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p2_in_obs)
 
 # Minkowski spacetime axes
 axis_scale = 1.2
 t_axis_mov_in_obs_t = t_steps_obs * axis_scale
-t_axis_mov_in_obs_x = v_p1_in_obs[0] * t_axis_mov_in_obs_t
+t_axis_mov_in_obs_x = matrix_from_vecs(t_axis_mov_in_obs_t, v_p1_in_obs)
 x_axis_mov_in_obs_x = c * t_steps_obs * axis_scale
-x_axis_mov_in_obs_t = t_phase(v_p1_in_obs[0], x_axis_mov_in_obs_x)
+x_axis_mov_in_obs_t = t_phase(matrix_from_vec(v_p1_in_obs, False), matrix_from_vec(x_axis_mov_in_obs_x, True))
 
 
 # ==== Output ====
 
 # Print info
 print("--- reference frame ---")
-print(f"back of mover: vel = {p1_in_ref['vel'][0]:.2f}, pos = {p1_in_ref['pos'][0]:.2f}, time = {p1_in_ref['time']:.2f}")
-print(f"front of mover: vel = {p2_in_ref['vel'][0]:.2f}, pos = {p2_in_ref['pos'][0]:.2f}, time = {p2_in_ref['time']:.2f}")
-print(f"observer: vel = {obs_in_ref['vel'][0]:.2f}, pos = {obs_in_ref['pos'][0]:.2f}, time = {obs_in_ref['time']:.2f}")
+print(f"back of mover: vel = {p1_in_ref['vel'][0]:.2f}, pos = {p1_in_ref['pos'][0]:.2f}, c*time = {c*p1_in_ref['time']:.2f}")
+print(f"front of mover: vel = {p2_in_ref['vel'][0]:.2f}, pos = {p2_in_ref['pos'][0]:.2f}, c*time = {c*p2_in_ref['time']:.2f}")
+print(f"observer: vel = {obs_in_ref['vel'][0]:.2f}, pos = {obs_in_ref['pos'][0]:.2f}, c*time = {c*obs_in_ref['time']:.2f}")
 print("--- mover frame ---")
-print(f"back of mover: vel = {p1_in_mov['vel'][0]:.2f}, pos = {p1_in_mov['pos'][0]:.2f}, time = {p1_in_mov['time']:.2f}")
-print(f"front of mover: vel = {p2_in_mov['vel'][0]:.2f}, pos = {p2_in_mov['pos'][0]:.2f}, time = {p2_in_mov['time']:.2f}")
+print(f"back of mover: vel = {p1_in_mov['vel'][0]:.2f}, pos = {p1_in_mov['pos'][0]:.2f}, c*time = {c*p1_in_mov['time']:.2f}")
+print(f"front of mover: vel = {p2_in_mov['vel'][0]:.2f}, pos = {p2_in_mov['pos'][0]:.2f}, c*time = {c*p2_in_mov['time']:.2f}")
 print("--- observer frame ---")
-print(f"back of mover: vel = {p1_in_obs['vel'][0]:.2f}, pos = {p1_in_obs['pos'][0]:.2f}, time = {p1_in_obs['time']:.2f}")
-print(f"front of mover: vel = {p2_in_obs['vel'][0]:.2f}, pos = {p2_in_obs['pos'][0]:.2f}, time = {p2_in_obs['time']:.2f}")
+print(f"back of mover: vel = {p1_in_obs['vel'][0]:.2f}, pos = {p1_in_obs['pos'][0]:.2f}, c*time = {c*p1_in_obs['time']:.2f}")
+print(f"front of mover: vel = {p2_in_obs['vel'][0]:.2f}, pos = {p2_in_obs['pos'][0]:.2f}, c*time = {c*p2_in_obs['time']:.2f}")
 
 # Define coordinates and grids for mover
 y_range = np.linspace(p1_in_obs['pos'][1], p1_in_obs['pos'][1] + l_mov_in_mov[1], 2)
@@ -182,13 +190,14 @@ ax_3d.set_aspect('equal')
 # Minkowski spacetime
 ax_md = fig.add_subplot(1,2,2)
 ax_md.set_title('Minkowski Spacetime')
-x = np.array([s_p1_in_obs_x, s_p2_in_obs_x])
+x = np.array([s_p1_in_obs_x[:,0], s_p2_in_obs_x[:,0]])
 ct = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
-ax_md.plot(x_axis_mov_in_obs_x, c*x_axis_mov_in_obs_t, 'b')
-ax_md.plot(t_axis_mov_in_obs_x, c*t_axis_mov_in_obs_t, 'b')
+ax_md.plot(x_axis_mov_in_obs_x, c*x_axis_mov_in_obs_t[:,0], 'b')
+ax_md.plot(t_axis_mov_in_obs_x[:,0], c*t_axis_mov_in_obs_t, 'b')
 ax_md.plot(x, x, 'k')
 ax_md.plot(x, -x, 'k')
 ax_md.plot(x, ct, 'r')
+ax_md.plot(np.transpose(x), np.transpose(ct), 'r')
 ax_md.set_xlabel('x')
 ax_md.set_ylabel('ct')
 ax_md.set_aspect('equal')
