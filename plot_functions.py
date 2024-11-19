@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from relativity_math import *
 
 def plot_3d_box(ax_3d, position, length):
@@ -47,3 +48,20 @@ def create_spacetime_plot(p1, p2, t_steps, ax_st):
     x = np.array([s_p1_in_obs[:,0], s_p2_in_obs[:,0]])
     ct = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
     plot_spacetime(ax_st, x, ct, axis_high, axis_low)
+
+def create_relativity_subplots(p1, p2, length, t_steps):
+    # Figure
+    fig = plt.figure()
+    fig.suptitle('Mover in Observer Frame')
+    # Plot mover
+    ax_3d = fig.add_subplot(1,2,1,projection='3d')
+    ax_3d.set_title('Appearance')
+    plot_3d_box(ax_3d, p1['pos'], length)
+    # Minkowski spacetime
+    ax_md = fig.add_subplot(1,2,2)
+    ax_md.set_title('Minkowski Spacetime')
+    create_spacetime_plot(p1, p2, t_steps, ax_md)
+    # Plot settings
+    plt.subplots_adjust(wspace=0.5, hspace=0.5)
+    plt.grid()
+    plt.show()

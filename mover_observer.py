@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from vector_math import *
 from relativity_math import *
 from plot_functions import *
@@ -53,21 +52,5 @@ print("--- observer frame ---")
 print(f"back of mover: vel = {obs_frame['p1']['vel'][0]:.2f}, pos = {obs_frame['p1']['pos'][0]:.2f}, c*time = {c*obs_frame['p1']['time']:.2f}")
 print(f"front of mover: vel = {obs_frame['p2']['vel'][0]:.2f}, pos = {obs_frame['p2']['pos'][0]:.2f}, c*time = {c*obs_frame['p2']['time']:.2f}")
 
-# Figure
-fig = plt.figure()
-fig.suptitle('Mover in Observer Frame')
-
-# Plot mover
-ax_3d = fig.add_subplot(1,2,1,projection='3d')
-ax_3d.set_title('Appearance')
-plot_3d_box(ax_3d, obs_frame['p1']['pos'], [l_mov_in_obs_x, l_mov_in_mov[1], l_mov_in_mov[2]])
-
-# Minkowski spacetime
-ax_md = fig.add_subplot(1,2,2)
-ax_md.set_title('Minkowski Spacetime')
-create_spacetime_plot(obs_frame['p1'], obs_frame['p2'], t_steps_obs, ax_md)
-
-# Plot settings
-plt.subplots_adjust(wspace=0.5, hspace=0.5)
-plt.grid()
-plt.show()
+# Plot info
+create_relativity_subplots(obs_frame['p1'], obs_frame['p2'], [l_mov_in_obs_x, l_mov_in_mov[1], l_mov_in_mov[2]], t_steps_obs)
