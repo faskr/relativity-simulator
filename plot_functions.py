@@ -1,0 +1,33 @@
+import numpy as np
+
+def plot_3d_box(ax_3d, position, length):
+    # Define coordinates and grids for box
+    y_range = np.linspace(position[1], position[1] + length[1], 2)
+    z_range = np.linspace(position[2], position[2] + length[2], 2)
+    x_range = np.linspace(position[0], length[0], 2)
+    sq_y, sq_z = np.meshgrid(y_range, z_range)
+    rc_xy, rc_y = np.meshgrid(x_range, y_range)
+    rc_xz, rc_z = np.meshgrid(x_range, z_range)
+    ones = np.ones((2, 2))
+    # Plot box
+    ax_3d.plot_surface(rc_xy, rc_y, ones*position[2], color='r') # z = 0
+    ax_3d.plot_surface(rc_xy, rc_y, ones*position[2] + length[2], color='r') # z = 1
+    ax_3d.plot_surface(rc_xz, ones*position[1], rc_z, color='r') # y = 0
+    ax_3d.plot_surface(rc_xz, ones*position[1] + length[1], rc_z, color='r') # y = 1
+    ax_3d.plot_surface(ones*position[0], sq_y, sq_z, color='r') # x = 0
+    ax_3d.plot_surface(ones*length[0], sq_y, sq_z, color='r') # x = L0
+    ax_3d.set_xlabel('x')
+    ax_3d.set_ylabel('y')
+    ax_3d.set_zlabel('z')
+    ax_3d.set_aspect('equal')
+
+def plot_spacetime(ax_st, x, ct, axis_high, axis_low):
+    ax_st.plot(axis_high, axis_low, 'b')
+    ax_st.plot(axis_low, axis_high, 'b')
+    ax_st.plot(x, x, 'k')
+    ax_st.plot(x, -x, 'k')
+    ax_st.plot(x, ct, 'r')
+    ax_st.plot(np.transpose(x), np.transpose(ct), 'r')
+    ax_st.set_xlabel('x')
+    ax_st.set_ylabel('ct')
+    ax_st.set_aspect('equal')

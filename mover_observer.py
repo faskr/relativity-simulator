@@ -1,11 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from vector_math import *
+from relativity_math import *
+from plot_functions import *
 
 # ==== Setup ====
-
-# Speed of light
-c = 100
 
 # Manual settings
 v_mov_in_ref_x = c * 0.8
@@ -13,161 +12,58 @@ v_obs_in_ref_x = c * 0.4
 l_mov_in_mov = np.array([2,1,1])
 t_steps_obs = np.linspace(0, 0.04, 5)
 
-
-# ==== Math functions ====
-
-# Scalar magnitude of vector
-def mag(v):
-    return np.sqrt(np.dot(v, np.transpose(v)))
-
-# Reshape a vector into two dimensions
-def matrix_from_vec(v, transpose=False):
-    if transpose:
-        return v.reshape(v.size, 1)
-    return v.reshape(1, v.size)
-
-# Dot product of two vectors that creates a matrix
-def matrix_from_vecs(u, v):
-    return np.dot(matrix_from_vec(u, True), matrix_from_vec(v, False))
-
-# Projection of u onto v: how long u is in direction of v and which way it's pointing relative to direction of v
-def proj(u, v):
-    return np.dot(u, v) / np.linalg.norm(v)
-
-# Absolute projection of u onto v: how long u is in direction of v and which way it's pointing in dimension of v
-def abs_proj(u, v):
-    return proj(u, np.abs(v))
-
-# Velocity addition formula
-def v_sum(v_a_in_b, v_b_in_c):
-    return (v_a_in_b + v_b_in_c) / (1 + v_a_in_b * v_b_in_c / c**2)
-
-def gamma(v):
-    return 1 / np.sqrt(1 - v**2 / c**2)
-
-def contract(x, v):
-    return x / gamma(v)
-
-def dilate(x, v):
-    return x * gamma(v)
-
-def t_phase(v, s):
-    s_mag = proj(s, v)
-    return mag(v) * s_mag / c**2
-
-def s_phase(v, t):
-    return v * t
-
-# Transform foreign frame to current frame
-def dilate_space(s, v, t):
-    return dilate(s + s_phase(v, t), v)
-
-# Transform foreign frame to current frame
-def dilate_time(t, v, s):
-    return dilate(t + t_phase(v, s), mag(v))
-
-# Transform current frame to foreign frame
-def contract_space(s, v, t):
-    return contract(s + s_phase(v, t), v)
-
-# Transform current frame to foreign frame
-def contract_time(t, v, s):
-    return contract(t + t_phase(v, s), mag(v))
-
-
 # ==== Scene ====
 
 # Set mover and observer in their own frames
-p1_in_mov = {
-    'vel': np.array([0,0,0], dtype=np.float32),
-    'pos': np.array([0,0,0], dtype=np.float32),
-    'time': 0,
-}
-p2_in_mov = {
-    'vel': p1_in_mov['pos'],
-    'pos': np.array([l_mov_in_mov[0],0,0], dtype=np.float32),
-    'time': p1_in_mov['time'],
-}
-obs_in_obs = {
-    'vel': np.array([0,0,0], dtype=np.float32),
-    'pos': np.array([0,0,0], dtype=np.float32),
-    'time': 0,
-}
+mov_frame = {}
+obs_frame = {}
+mov_frame['p1'] = create_point([0,0,0], [0,0,0], 0)
+mov_frame['p2'] = create_point(mov_frame['p1']['pos'], [l_mov_in_mov[0],0,0], mov_frame['p1']['time'])
+obs_frame['obs'] = create_point([0,0,0], [0,0,0], 0)
 
 # Set & calculate mover and observer in reference frame
 v_p1_in_ref = np.array([v_mov_in_ref_x,0,0], dtype=np.float32)
-p1_in_ref = {
-    'vel': v_p1_in_ref,
-    'pos': dilate_space(p1_in_mov['pos'], v_p1_in_ref, p1_in_mov['time']),
-    'time': dilate_time(p1_in_mov['time'], v_p1_in_ref, p1_in_mov['pos']),
-}
 v_p2_in_ref = np.array([v_mov_in_ref_x,0,0], dtype=np.float32)
-p2_in_ref = {
-    'vel': v_p2_in_ref,
-    'pos': dilate_space(p2_in_mov['pos'], v_p2_in_ref, p2_in_mov['time']),
-    'time': dilate_time(p2_in_mov['time'], v_p2_in_ref, p2_in_mov['pos']),
-}
 v_obs_in_ref = np.array([v_obs_in_ref_x,0,0], dtype=np.float32)
-obs_in_ref = {
-    'vel': v_obs_in_ref,
-    'pos': dilate_space(obs_in_obs['pos'], v_obs_in_ref, obs_in_obs['time']),
-    'time': dilate_time(obs_in_obs['time'], v_obs_in_ref, obs_in_obs['pos']),
-}
+ref_frame = {}
+ref_frame['p1'] = point_in_new_frame(v_p1_in_ref, mov_frame, 'p1')
+ref_frame['p2'] = point_in_new_frame(v_p2_in_ref, mov_frame, 'p2')
+ref_frame['obs'] = point_in_new_frame(v_obs_in_ref, obs_frame, 'obs')
 
 # Calculate mover in observer frame
-v_ref_in_obs = -obs_in_ref['vel']
-v_p1_in_obs = v_sum(p1_in_ref['vel'], v_ref_in_obs)
-v_p2_in_obs = v_sum(p2_in_ref['vel'], v_ref_in_obs)
-p1_in_obs = {
-    'vel': v_p1_in_obs,
-    'pos': dilate_space(p1_in_mov['pos'], v_p1_in_obs, p1_in_mov['time']),
-    'time': dilate_time(p1_in_mov['time'], v_p1_in_obs, p1_in_mov['pos']),
-}
-p2_in_obs = {
-    'vel': v_p2_in_obs,
-    'pos': dilate_space(p2_in_mov['pos'], v_p2_in_obs, p2_in_mov['time']),
-    'time': dilate_time(p2_in_mov['time'], v_p2_in_obs, p2_in_mov['pos']),
-}
+v_ref_in_obs = -ref_frame['obs']['vel']
+v_p1_in_obs = v_sum(ref_frame['p1']['vel'], v_ref_in_obs)
+v_p2_in_obs = v_sum(ref_frame['p2']['vel'], v_ref_in_obs)
+obs_frame['p1'] = point_in_new_frame(v_p1_in_obs, mov_frame, 'p1')
+obs_frame['p2'] = point_in_new_frame(v_p2_in_obs, mov_frame, 'p2')
 
 # Length of the mover in a simultaneous slice of time in the observer frame
-l_mov_in_obs_x = contract(p2_in_mov['pos'][0] - p1_in_mov['pos'][0], p1_in_obs['vel'][0])
+l_mov_in_obs_x = contract(mov_frame['p2']['pos'][0] - mov_frame['p1']['pos'][0], obs_frame['p1']['vel'][0])
 
 # Minkowski spacetime values
-t_p1_in_obs = p1_in_obs['time'] + t_steps_obs
-t_p2_in_obs = p2_in_obs['time'] + t_steps_obs
-s_p1_in_obs_x = np.tile(p1_in_obs['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p1_in_obs)
-s_p2_in_obs_x = np.tile(p2_in_obs['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p2_in_obs)
+t_p1_in_obs = obs_frame['p1']['time'] + t_steps_obs
+t_p2_in_obs = obs_frame['p2']['time'] + t_steps_obs
+s_p1_in_obs_x = np.tile(obs_frame['p1']['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p1_in_obs)
+s_p2_in_obs_x = np.tile(obs_frame['p2']['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p2_in_obs)
 
 # Minkowski spacetime axes
 axis_scale = 1.2
-t_axis_mov_in_obs_t = t_steps_obs * axis_scale
-t_axis_mov_in_obs_x = matrix_from_vecs(t_axis_mov_in_obs_t, v_p1_in_obs)
-x_axis_mov_in_obs_x = c * t_steps_obs * axis_scale
-x_axis_mov_in_obs_t = t_phase(matrix_from_vec(v_p1_in_obs, False), matrix_from_vec(x_axis_mov_in_obs_x, True))
-
+axis_high = c * t_steps_obs * axis_scale
+axis_low = matrix_from_vecs(t_steps_obs * axis_scale, v_p1_in_obs)[:,0]
 
 # ==== Output ====
 
 # Print info
 print("--- reference frame ---")
-print(f"back of mover: vel = {p1_in_ref['vel'][0]:.2f}, pos = {p1_in_ref['pos'][0]:.2f}, c*time = {c*p1_in_ref['time']:.2f}")
-print(f"front of mover: vel = {p2_in_ref['vel'][0]:.2f}, pos = {p2_in_ref['pos'][0]:.2f}, c*time = {c*p2_in_ref['time']:.2f}")
-print(f"observer: vel = {obs_in_ref['vel'][0]:.2f}, pos = {obs_in_ref['pos'][0]:.2f}, c*time = {c*obs_in_ref['time']:.2f}")
+print(f"back of mover: vel = {ref_frame['p1']['vel'][0]:.2f}, pos = {ref_frame['p1']['pos'][0]:.2f}, c*time = {c*ref_frame['p1']['time']:.2f}")
+print(f"front of mover: vel = {ref_frame['p2']['vel'][0]:.2f}, pos = {ref_frame['p2']['pos'][0]:.2f}, c*time = {c*ref_frame['p2']['time']:.2f}")
+print(f"observer: vel = {ref_frame['obs']['vel'][0]:.2f}, pos = {ref_frame['obs']['pos'][0]:.2f}, c*time = {c*ref_frame['obs']['time']:.2f}")
 print("--- mover frame ---")
-print(f"back of mover: vel = {p1_in_mov['vel'][0]:.2f}, pos = {p1_in_mov['pos'][0]:.2f}, c*time = {c*p1_in_mov['time']:.2f}")
-print(f"front of mover: vel = {p2_in_mov['vel'][0]:.2f}, pos = {p2_in_mov['pos'][0]:.2f}, c*time = {c*p2_in_mov['time']:.2f}")
+print(f"back of mover: vel = {mov_frame['p1']['vel'][0]:.2f}, pos = {mov_frame['p1']['pos'][0]:.2f}, c*time = {c*mov_frame['p1']['time']:.2f}")
+print(f"front of mover: vel = {mov_frame['p2']['vel'][0]:.2f}, pos = {mov_frame['p2']['pos'][0]:.2f}, c*time = {c*mov_frame['p2']['time']:.2f}")
 print("--- observer frame ---")
-print(f"back of mover: vel = {p1_in_obs['vel'][0]:.2f}, pos = {p1_in_obs['pos'][0]:.2f}, c*time = {c*p1_in_obs['time']:.2f}")
-print(f"front of mover: vel = {p2_in_obs['vel'][0]:.2f}, pos = {p2_in_obs['pos'][0]:.2f}, c*time = {c*p2_in_obs['time']:.2f}")
-
-# Define coordinates and grids for mover
-y_range = np.linspace(p1_in_obs['pos'][1], p1_in_obs['pos'][1] + l_mov_in_mov[1], 2)
-z_range = np.linspace(p1_in_obs['pos'][2], p1_in_obs['pos'][2] + l_mov_in_mov[2], 2)
-x_range = np.linspace(p1_in_obs['pos'][0], l_mov_in_obs_x, 2)
-sq_y, sq_z = np.meshgrid(y_range, z_range)
-rc_xy, rc_y = np.meshgrid(x_range, y_range)
-rc_xz, rc_z = np.meshgrid(x_range, z_range)
-ones = np.ones((2, 2))
+print(f"back of mover: vel = {obs_frame['p1']['vel'][0]:.2f}, pos = {obs_frame['p1']['pos'][0]:.2f}, c*time = {c*obs_frame['p1']['time']:.2f}")
+print(f"front of mover: vel = {obs_frame['p2']['vel'][0]:.2f}, pos = {obs_frame['p2']['pos'][0]:.2f}, c*time = {c*obs_frame['p2']['time']:.2f}")
 
 # Figure
 fig = plt.figure()
@@ -176,31 +72,14 @@ fig.suptitle('Mover in Observer Frame')
 # Plot mover
 ax_3d = fig.add_subplot(1,2,1,projection='3d')
 ax_3d.set_title('Appearance')
-ax_3d.plot_surface(rc_xy, rc_y, ones*p1_in_obs['pos'][2], color='r') # z = 0
-ax_3d.plot_surface(rc_xy, rc_y, ones*p1_in_obs['pos'][2] + l_mov_in_mov[2], color='r') # z = 1
-ax_3d.plot_surface(rc_xz, ones*p1_in_obs['pos'][1], rc_z, color='r') # y = 0
-ax_3d.plot_surface(rc_xz, ones*p1_in_obs['pos'][1] + l_mov_in_mov[1], rc_z, color='r') # y = 1
-ax_3d.plot_surface(ones*p1_in_obs['pos'][0], sq_y, sq_z, color='r') # x = 0
-ax_3d.plot_surface(ones*l_mov_in_obs_x, sq_y, sq_z, color='r') # x = L0
-ax_3d.set_xlabel('x')
-ax_3d.set_ylabel('y')
-ax_3d.set_zlabel('z')
-ax_3d.set_aspect('equal')
+plot_3d_box(ax_3d, obs_frame['p1']['pos'], [l_mov_in_obs_x, l_mov_in_mov[1], l_mov_in_mov[2]])
 
 # Minkowski spacetime
 ax_md = fig.add_subplot(1,2,2)
 ax_md.set_title('Minkowski Spacetime')
 x = np.array([s_p1_in_obs_x[:,0], s_p2_in_obs_x[:,0]])
 ct = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
-ax_md.plot(x_axis_mov_in_obs_x, c*x_axis_mov_in_obs_t[:,0], 'b')
-ax_md.plot(t_axis_mov_in_obs_x[:,0], c*t_axis_mov_in_obs_t, 'b')
-ax_md.plot(x, x, 'k')
-ax_md.plot(x, -x, 'k')
-ax_md.plot(x, ct, 'r')
-ax_md.plot(np.transpose(x), np.transpose(ct), 'r')
-ax_md.set_xlabel('x')
-ax_md.set_ylabel('ct')
-ax_md.set_aspect('equal')
+plot_spacetime(ax_md, x, ct, axis_high, axis_low)
 
 # Plot settings
 plt.subplots_adjust(wspace=0.5, hspace=0.5)
