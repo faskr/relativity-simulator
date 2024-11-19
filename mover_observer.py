@@ -36,20 +36,8 @@ v_p1_in_obs = v_sum(ref_frame['p1']['vel'], v_ref_in_obs)
 v_p2_in_obs = v_sum(ref_frame['p2']['vel'], v_ref_in_obs)
 obs_frame['p1'] = point_in_new_frame(v_p1_in_obs, mov_frame, 'p1')
 obs_frame['p2'] = point_in_new_frame(v_p2_in_obs, mov_frame, 'p2')
-
 # Length of the mover in a simultaneous slice of time in the observer frame
 l_mov_in_obs_x = contract(mov_frame['p2']['pos'][0] - mov_frame['p1']['pos'][0], obs_frame['p1']['vel'][0])
-
-# Minkowski spacetime values
-t_p1_in_obs = obs_frame['p1']['time'] + t_steps_obs
-t_p2_in_obs = obs_frame['p2']['time'] + t_steps_obs
-s_p1_in_obs_x = np.tile(obs_frame['p1']['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p1_in_obs)
-s_p2_in_obs_x = np.tile(obs_frame['p2']['pos'], (5, 1)) + matrix_from_vecs(t_steps_obs, v_p2_in_obs)
-
-# Minkowski spacetime axes
-axis_scale = 1.2
-axis_high = c * t_steps_obs * axis_scale
-axis_low = matrix_from_vecs(t_steps_obs * axis_scale, v_p1_in_obs)[:,0]
 
 # ==== Output ====
 
@@ -77,9 +65,7 @@ plot_3d_box(ax_3d, obs_frame['p1']['pos'], [l_mov_in_obs_x, l_mov_in_mov[1], l_m
 # Minkowski spacetime
 ax_md = fig.add_subplot(1,2,2)
 ax_md.set_title('Minkowski Spacetime')
-x = np.array([s_p1_in_obs_x[:,0], s_p2_in_obs_x[:,0]])
-ct = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
-plot_spacetime(ax_md, x, ct, axis_high, axis_low)
+create_spacetime_plot(obs_frame['p1'], obs_frame['p2'], t_steps_obs, ax_md)
 
 # Plot settings
 plt.subplots_adjust(wspace=0.5, hspace=0.5)

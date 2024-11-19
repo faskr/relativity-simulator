@@ -1,4 +1,5 @@
 import numpy as np
+from relativity_math import *
 
 def plot_3d_box(ax_3d, position, length):
     # Define coordinates and grids for box
@@ -31,3 +32,18 @@ def plot_spacetime(ax_st, x, ct, axis_high, axis_low):
     ax_st.set_xlabel('x')
     ax_st.set_ylabel('ct')
     ax_st.set_aspect('equal')
+
+def create_spacetime_plot(p1, p2, t_steps, ax_st):
+    # Minkowski spacetime values
+    t_p1_in_obs = p1['time'] + t_steps
+    t_p2_in_obs = p2['time'] + t_steps
+    s_p1_in_obs = np.tile(p1['pos'], (5, 1)) + matrix_from_vecs(t_steps, p1['vel'])
+    s_p2_in_obs = np.tile(p2['pos'], (5, 1)) + matrix_from_vecs(t_steps, p2['vel'])
+    # Minkowski spacetime axes
+    axis_scale = 1.2
+    axis_high = c * t_steps * axis_scale
+    axis_low = matrix_from_vecs(t_steps * axis_scale, p1['vel'])[:,0]
+    # Plot
+    x = np.array([s_p1_in_obs[:,0], s_p2_in_obs[:,0]])
+    ct = np.array([c*t_p1_in_obs, c*t_p2_in_obs])
+    plot_spacetime(ax_st, x, ct, axis_high, axis_low)
