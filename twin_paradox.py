@@ -53,6 +53,8 @@ v_hib_in_tib = np.array([-v_tib_in_hib_x,0,0], dtype=np.float32)
 tib_frame['hib'] = create_point(v_hib_in_tib, traj_hob_in_tob['pos'][-1,:], traj_hob_in_tob['time'][-1])
 traj_hib_in_tib = trajectory(tib_frame['hib'], t_steps_ib)
 
+# ==== Output ====
+
 # Plot out-bound journeys in home frame
 fig = plt.figure()
 fig.suptitle('Twin Trajectories')
