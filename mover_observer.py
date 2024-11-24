@@ -17,7 +17,7 @@ t_steps_obs = np.linspace(0, 0.04, 5)
 mov_frame = {}
 obs_frame = {}
 mov_frame['p1'] = create_point([0,0,0], [0,0,0], 0)
-mov_frame['p2'] = create_point(mov_frame['p1']['pos'], [l_mov_in_mov[0],0,0], mov_frame['p1']['time'])
+mov_frame['p2'] = create_point(mov_frame['p1']['vel'], [l_mov_in_mov[0],0,0], mov_frame['p1']['time'])
 obs_frame['obs'] = create_point([0,0,0], [0,0,0], 0)
 
 # Set & calculate mover and observer in reference frame
