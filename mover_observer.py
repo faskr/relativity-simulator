@@ -25,16 +25,16 @@ v_p1_in_ref = np.array([v_mov_in_ref_x,0,0], dtype=np.float32)
 v_p2_in_ref = np.array([v_mov_in_ref_x,0,0], dtype=np.float32)
 v_obs_in_ref = np.array([v_obs_in_ref_x,0,0], dtype=np.float32)
 ref_frame = {}
-ref_frame['p1'] = point_in_new_frame(v_p1_in_ref, mov_frame, 'p1')
-ref_frame['p2'] = point_in_new_frame(v_p2_in_ref, mov_frame, 'p2')
-ref_frame['obs'] = point_in_new_frame(v_obs_in_ref, obs_frame, 'obs')
+ref_frame['p1'] = point_in_new_frame(v_p1_in_ref, mov_frame['p1'])
+ref_frame['p2'] = point_in_new_frame(v_p2_in_ref, mov_frame['p2'])
+ref_frame['obs'] = point_in_new_frame(v_obs_in_ref, obs_frame['obs'])
 
 # Calculate mover in observer frame
 v_ref_in_obs = -ref_frame['obs']['vel']
 v_p1_in_obs = v_sum(ref_frame['p1']['vel'], v_ref_in_obs)
 v_p2_in_obs = v_sum(ref_frame['p2']['vel'], v_ref_in_obs)
-obs_frame['p1'] = point_in_new_frame(v_p1_in_obs, mov_frame, 'p1')
-obs_frame['p2'] = point_in_new_frame(v_p2_in_obs, mov_frame, 'p2')
+obs_frame['p1'] = point_in_new_frame(v_p1_in_obs, mov_frame['p1'])
+obs_frame['p2'] = point_in_new_frame(v_p2_in_obs, mov_frame['p2'])
 # Length of the mover in a simultaneous slice of time in the observer frame
 l_mov_in_obs_x = contract(mov_frame['p2']['pos'][0] - mov_frame['p1']['pos'][0], obs_frame['p1']['vel'][0])
 
