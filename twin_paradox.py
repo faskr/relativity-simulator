@@ -67,7 +67,7 @@ traj_tib_in_home = hib_frame_stationary['tib'].trajectory(t_steps_ib_in_home)
 traj_hob_in_home = hob_frame['hob'].trajectory(t_steps_ob_in_home)
 traj_hib_in_home = hib_frame_stationary['hib'].trajectory(t_steps_ib_in_home)
 
-## Concatenate Trajectories to form Paths; this assumes equivalent reference frames, i.e. hob = hib
+## Concatenate trajectories to form paths
 path_home_in_home = traj_hob_in_home.concatenate(traj_hib_in_home)
 path_trav_in_home = traj_tob_in_home.concatenate(traj_tib_in_home)
 
@@ -105,20 +105,27 @@ t_steps_tob_in_tob = np.linspace(0, t_tap_in_tob, 100)
 t_steps_tib_in_tib = t_steps_tob_in_tob
 
 # Calculate out-bound trajectories in traveller frame
-traj_tob_in_tob = tob_frame['tob'].trajectory(t_steps_tob_in_tob)
 traj_hob_in_tob = tob_frame['hob'].trajectory(t_steps_tob_in_tob)
 
 # Set in-bound traveller in its own frame
 tib_frame = {}
 tib_frame['tib'] = Point([0,0,0], [0,0,0], t_tap_in_tob)
 
-# Set and calculate in-bound journey of home and traveller in traveller frame
-traj_tib_in_tib = tib_frame['tib'].trajectory(t_steps_tib_in_tib)
+# Calculate in-bound home journey in traveller frame
 v_hib_in_tib = -v_tib_in_hib
 tib_frame['hib'] = Point(v_hib_in_tib, traj_hob_in_tob.pos[-1,:], traj_hob_in_tob.time[-1])
 traj_hib_in_tib = tib_frame['hib'].trajectory(t_steps_tib_in_tib)
+
+# Set and calculate traveller trajectories in traveller frame
+traj_tob_in_tob = tob_frame['tob'].trajectory(t_steps_tob_in_tob)
+traj_tib_in_tib = tib_frame['tib'].trajectory(t_steps_tib_in_tib)
+
+## Concatenate Trajectories to form Paths; need to revise this so that all variables are in traveller frame, not tob or tib
 path_home_in_trav = traj_hob_in_tob.concatenate(traj_hib_in_tib)
 path_trav_in_trav = traj_tob_in_tob.concatenate(traj_tib_in_tib)
+
+
+### Out-Bound Traveller Plot
 
 v_hib_in_tob = v_sum(v_hib_in_hob_stationary, v_hob_in_tob)
 tob_frame['hib'] = Point(v_hib_in_tob, traj_hob_in_tob.pos[-1,:], traj_hob_in_tob.time[-1])
@@ -129,6 +136,9 @@ tob_frame['tib'] = Point(v_tib_in_tob, traj_tob_in_tob.pos[-1,:], traj_tob_in_to
 traj_tib_in_tob = tob_frame['tib'].trajectory(t_steps_tib_in_tib)
 path_home_in_tob = traj_hob_in_tob.concatenate(traj_hib_in_tob)
 path_trav_in_tob = traj_tob_in_tob.concatenate(traj_tib_in_tob)
+
+
+### In-Bound Traveller Plot
 
 #v_tob_in_tib = -v_tib_in_tob
 #v_hob_in_tib = v_sum(v_hob_in_tob, v_tob_in_tib)
