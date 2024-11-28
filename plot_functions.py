@@ -24,8 +24,8 @@ def plot_3d_box(ax_3d, position, length):
     ax_3d.set_aspect('equal')
 
 def plot_steps(ax_st, trajectories, axis):
-    x_steps = np.stack([t['pos'][:, axis] for t in trajectories], axis=0)
-    ct_steps = np.stack([c * t['time'] for t in trajectories], axis=0)
+    x_steps = np.stack([t.pos[:, axis] for t in trajectories], axis=0)
+    ct_steps = np.stack([c * t.time for t in trajectories], axis=0)
     ax_st.plot(x_steps, ct_steps, 'r')
     ax_st.set_xlabel('x')
     ax_st.set_ylabel('ct')
@@ -33,17 +33,17 @@ def plot_steps(ax_st, trajectories, axis):
     plt.grid()
 
 def plot_trajectories(ax_st, trajectories, axis):
-    x_trajs = np.stack([t['pos'][:, axis] for t in trajectories], axis=1)
-    ct_trajs = np.stack([c * t['time'] for t in trajectories], axis=1)
+    x_trajs = np.stack([t.pos[:, axis] for t in trajectories], axis=1)
+    ct_trajs = np.stack([c * t.time for t in trajectories], axis=1)
     ax_st.plot(x_trajs, ct_trajs, 'r')
     ax_st.set_xlabel('x')
     ax_st.set_ylabel('ct')
     ax_st.set_aspect('equal')
     plt.grid()
 
-def plot_spacetime(ax_st, trajectories, v_axis=0, axes=None, do_cones=True, do_step=False, do_traj=True):
-    x_steps = np.stack([t['pos'][:, v_axis] for t in trajectories], axis=0)
-    ct_steps = np.stack([c * t['time'] for t in trajectories], axis=0)
+def plot_spacetime(ax_st, paths, v_axis=0, axes=None, do_cones=True, do_step=False, do_traj=True):
+    x_steps = np.stack([p.pos[:, v_axis] for p in paths], axis=0)
+    ct_steps = np.stack([c * p.time for p in paths], axis=0)
     if axes:
         ax_st.plot(axes[0], axes[1], 'b')
         ax_st.plot(axes[1], axes[0], 'b')
@@ -62,12 +62,12 @@ def plot_spacetime(ax_st, trajectories, v_axis=0, axes=None, do_cones=True, do_s
 
 def plot_spacetime_2_points(p1, p2, t_steps, ax_st):
     # Minkowski spacetime values
-    traj_p1 = trajectory(p1, t_steps)
-    traj_p2 = trajectory(p2, t_steps)
+    traj_p1 = p1.trajectory(t_steps)
+    traj_p2 = p2.trajectory(t_steps)
     # Minkowski spacetime axes
     axis_scale = 1.2
     axis_high = c * t_steps * axis_scale
-    axis_low = matrix_from_vecs(t_steps * axis_scale, p1['vel'])[:,0]
+    axis_low = matrix_from_vecs(t_steps * axis_scale, p1.vel)[:,0]
     # Plot
     plot_spacetime(ax_st, (traj_p1, traj_p2), axes=(axis_high, axis_low), do_step=True)
 
@@ -78,7 +78,7 @@ def create_relativity_subplots(p1, p2, length, t_steps):
     # Plot mover
     ax_3d = fig.add_subplot(1,2,1,projection='3d')
     ax_3d.set_title('Appearance')
-    plot_3d_box(ax_3d, p1['pos'], length)
+    plot_3d_box(ax_3d, p1.pos, length)
     # Minkowski spacetime
     ax_md = fig.add_subplot(1,2,2)
     ax_md.set_title('Minkowski Spacetime')

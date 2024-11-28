@@ -1,0 +1,17 @@
+Organize dependencies into a library directory
+Plot full journey in each reference frame: home, traveller, tob, tib
+Plot full journey with time as the independent variable instead of distance, again in each reference frame
+Include light signals between twins in all plots
+Write a function that transforms one frame to another when the origins are not coincident; solution:
+    Suppose A at (0,0) coincides with B at (-1,-1)
+    Let B' = B + (1,1), i.e. the origins of A and B' coincide
+    Transform A => B using Lorentz transform
+    Transform B => B' using additive transform above
+Write a function that transforms for cases of contraction, and rename new_frame
+
+
+Products of twin paradox script
+    home: v_hob = v_hib = 0
+    trav: v_tob = v_tib = 0
+    tob: v_hob = v_hib = -v
+    tib: v_hob = v_hib = v
