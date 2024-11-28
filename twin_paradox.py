@@ -78,6 +78,7 @@ path_trav_in_home = traj_tob_in_home.concatenate(traj_tib_in_home)
 
 v_tib_in_tob_trav = np.array([0,0,0], dtype=np.float32)
 v_tob_in_tib_trav = -v_tib_in_tob_trav
+# Not sure if these are needed
 v_tib_in_hob_trav = v_sum(v_tib_in_tob_trav, v_tob_in_hob)
 v_hib_in_tib = -v_tib_in_hib
 v_hib_in_hob_trav = np.array(v_sum(v_hib_in_tib, v_tib_in_hob_trav), dtype=np.float32)
