@@ -33,6 +33,7 @@ def s_phase(v_a_in_b, t_in_a):
     # Transform without acceleration: If a point has certain coordinates in the frame of an object, what are its coordinates in the frame of another object?
     # Transform with acceleration: If a point has certain coordinates in the frame of an object, what are its coordinates in the frame of the same object moving at a different velocity?
 # Length/lifespan: When a point is defined with a position or time in a simultaneous slice of time or space in the current frame, that point has a position or time that is larger in the foreign frame's slice.
+# Note: duration or presence might be more apt terms than lifespan, since it's about how long an extent of space in one frame, is present in a point of space in the other.
 
 # Transform foreign frame A to current frame B
 #   Relative dilation: B observes a point as having a certain position in A, and a larger position in B

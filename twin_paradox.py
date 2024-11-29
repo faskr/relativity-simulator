@@ -32,7 +32,9 @@ hob_frame['hob'] = Point([0,0,0], [s_sep_in_hob_x,0,0], 0)
 t_obj_in_hob = (s_tap_in_hob_x - s_sep_in_hob_x) / v_tob_in_hob_x
 s_tap_in_hob = np.array([s_tap_in_hob_x,0,0], dtype=np.float32)
 s_sep_in_hob = np.array([s_sep_in_hob_x,0,0], dtype=np.float32)
-# Contract, because hib is the foreign frame, because tap and hob are in the same reference frame
+# Contract, because sep and tap are lengths (at a single point in time in hib) and the times hib reaches them are durations at a single position coordinate in hib
+# Length and presence contraction: sep and tap are defined in hob; in a simultaneous point in time in hib, sep and tap are closer to the origin of acceleration (i.e. where acceleration is observed)
+# In any given [space/time] instant in hib, sep and tap are closer to the origin and each other [in time/space] (if not the same distance) than in any given instant in hob
 s_tap_in_hib_stationary = contract_space(s_tap_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].time)
 s_sep_in_hib_stationary = contract_space(s_sep_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].time)
 t_ibj_in_hib_stationary = (s_sep_in_hib_stationary[0] - s_tap_in_hib_stationary[0]) / v_tib_in_hib_x
