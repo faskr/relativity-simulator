@@ -28,9 +28,16 @@ def t_phase(v_a_in_b, s_in_a):
 def s_phase(v_a_in_b, t_in_a):
     return v_a_in_b * t_in_a
 
+# What is dilation?
+# Point: When a point is defined with a position and time in a foreign frame, that point has position and time in the current frame which are larger.
+    # Transform without acceleration: If a point has certain coordinates in the frame of an object, what are its coordinates in the frame of another object?
+    # Transform with acceleration: If a point has certain coordinates in the frame of an object, what are its coordinates in the frame of the same object moving at a different velocity?
+# Length/lifespan: When a point is defined with a position or time in a simultaneous slice of time or space in the current frame, that point has a position or time that is larger in the foreign frame's slice.
+
 # Transform foreign frame A to current frame B
 #   Relative dilation: B observes a point as having a certain position in A, and a larger position in B
-#   Absolute deceleration: A has decelerated to B, and the absolute difference between A and the frame of the object at s has decreased by v_a_in_b
+#   Absolute deceleration: A has decelerated to B; A is further from the frame of the object at s than B; the difference has objectively decreased; the increase in B = -v_a_in_b
+#   Length dilation: B observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a larger difference measured in A
 def dilate_space(s_in_a, v_a_in_b, t_in_a):
     return dilate(s_in_a + s_phase(v_a_in_b, t_in_a), v_a_in_b)
 
@@ -38,9 +45,15 @@ def dilate_space(s_in_a, v_a_in_b, t_in_a):
 def dilate_time(t_in_a, v_a_in_b, s_in_a):
     return dilate(t_in_a + t_phase(v_a_in_b, s_in_a), mag(v_a_in_b))
 
+# What is contraction?
+# Point: When a point is defined with a position and time in the current frame, that point has position and time in the foreign frame which are smaller.
+    # See transform with vs. without acceleration above.
+# Length/lifespan: When a point is defined with a position or time in a simultaneous slice of time or space in the foreign frame, that point has a position or time that is smaller in the current frame's slice.
+
 # Transform current frame A to foreign frame B
 #   Relative contraction: A observes a point as having a certain position in A, and a smaller position in B
-#   Absolute acceleration: A has accelerated to B, and the absolute difference between A and the frame of the object at s has increased by v_a_in_b
+#   Absolute acceleration: A has accelerated to B; B is further from the frame of the object at s than A; the difference has objectively increased; the increase in B = -v_a_in_b
+#   Length contraction: A observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a smaller difference measured in A
 def contract_space(s_in_a, v_a_in_b, t_in_a):
     return contract(s_in_a + s_phase(v_a_in_b, t_in_a), v_a_in_b)
 
