@@ -22,22 +22,28 @@ v_hob_in_hib_stationary = -v_hib_in_hob_stationary
 
 # Out-Bound Journey
 
+# Calculate duration of out-bound journey in home frame
+t_obj_in_hob = (s_tap_in_hob_x - s_sep_in_hob_x) / v_tob_in_hob_x
+
 # Set out-bound home in its own frame
 hob_frame = {}
 hob_frame['hob'] = Point([0,0,0], [s_sep_in_hob_x,0,0], 0)
 
 # In-Bound Journey
 
-# Calculate duration of each journey in home frame
-t_obj_in_hob = (s_tap_in_hob_x - s_sep_in_hob_x) / v_tob_in_hob_x
+# Calculate duration of in-bound journey in home frame
 s_tap_in_hob = np.array([s_tap_in_hob_x,0,0], dtype=np.float32)
 s_sep_in_hob = np.array([s_sep_in_hob_x,0,0], dtype=np.float32)
-# Contract, because sep and tap are lengths (at a single point in time in hib) and the times hib reaches them are durations at a single position coordinate in hib
-# Length and presence contraction: sep and tap are defined in hob; in a simultaneous point in time in hib, sep and tap are closer to the origin of acceleration (i.e. where acceleration is observed)
-# In any given [space/time] instant in hib, sep and tap are closer to the origin and each other [in time/space] (if not the same distance) than in any given instant in hob
+# Contract (supposing v_hob_in_hib =/= 0):
+#   s_tap and s_sep are defined in hob, but measured simultaneously in hib, i.e. s_sep and s_tap are lengths
+#   t_ibj in hob is defined in hob, but is then measured at a point in space that is the same in hib throughout the measurement, i.e. t_ibj is a presence duration
 s_tap_in_hib_stationary = contract_space(s_tap_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].time)
 s_sep_in_hib_stationary = contract_space(s_sep_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].time)
 t_ibj_in_hib_stationary = (s_sep_in_hib_stationary[0] - s_tap_in_hib_stationary[0]) / v_tib_in_hib_x
+
+# TODO: Generalize these comments about the origin of acceleration and put them somewhere for reference; it's a useful concept
+# Length and presence contraction: sep and tap are defined in hob; in a simultaneous point in time in hib, sep and tap are closer to the origin of acceleration (i.e. where acceleration is observed)
+# In any given [space/time] instant in hib, sep and tap are closer to the origin and each other [in time/space] (if not the same distance) than in any given instant in hob
 
 # Set in-bound home in its own frame
 hib_frame_stationary = {}
@@ -92,7 +98,6 @@ tob_frame['tob'] = Point([0,0,0], [0,0,0], 0)
 
 # Calculate out-bound journey of home in traveller frame
 v_hob_in_tob = -v_tob_in_hob
-# Not sure if contraction is correct here, or why it is
 s_hob_in_tob = contract_space(hob_frame['hob'].pos, v_hob_in_tob, hob_frame['hob'].time)
 t_hob_in_tob = contract_time(hob_frame['hob'].time, v_hob_in_tob, hob_frame['hob'].pos)
 tob_frame['hob'] = Point(v_hob_in_tob, s_hob_in_tob, t_hob_in_tob)

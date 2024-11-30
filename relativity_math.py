@@ -28,11 +28,11 @@ def t_phase(v_a_in_b, s_in_a):
 def s_phase(v_a_in_b, t_in_a):
     return v_a_in_b * t_in_a
 
-# What is dilation?
-# Point: When a point is defined with a position and time in a foreign frame, that point has position and time in the current frame which are larger.
+# What is dilation and when does it apply?
+# Point: When a point is defined with a position or time in a foreign frame and measured in that frame's axis of space or time (not considering phase), that point's position or time is larger in the current frame.
     # Transform without acceleration: If a point has certain coordinates in the frame of an object, what are its coordinates in the frame of another object?
     # Transform with acceleration: If a point has certain coordinates in the frame of an object, what are its coordinates in the frame of the same object moving at a different velocity?
-# Length/lifespan: When a point is defined with a position or time in a simultaneous slice of time or space in the current frame, that point has a position or time that is larger in the foreign frame's slice.
+# Length/lifespan: When a point is defined with a position or time in the current frame and measured in that frame's axis of space or time (not considering phase), that point's position or time is larger in the foreign frame.
 # Note: duration or presence might be more apt terms than lifespan, since it's about how long an extent of space in one frame, is present in a point of space in the other.
 
 # Transform foreign frame A to current frame B
@@ -46,10 +46,10 @@ def dilate_space(s_in_a, v_a_in_b, t_in_a):
 def dilate_time(t_in_a, v_a_in_b, s_in_a):
     return dilate(t_in_a + t_phase(v_a_in_b, s_in_a), mag(v_a_in_b))
 
-# What is contraction?
-# Point: When a point is defined with a position and time in the current frame, that point has position and time in the foreign frame which are smaller.
+# What is contraction and when does it apply?
+# Point: When a point is defined with a position or time in the current frame and measured in a foreign frame's axis of space or time, that point's position or time is smaller in the foreign frame.
     # See transform with vs. without acceleration above.
-# Length/lifespan: When a point is defined with a position or time in a simultaneous slice of time or space in the foreign frame, that point has a position or time that is smaller in the current frame's slice.
+# Length/lifespan: When a point is defined with a position or time in the foreign frame and measured in the current frame's axis of space or time, that point's position or time is smaller in the current frame.
 
 # Transform current frame A to foreign frame B
 #   Relative contraction: A observes a point as having a certain position in A, and a smaller position in B
