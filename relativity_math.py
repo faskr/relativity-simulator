@@ -47,9 +47,9 @@ def dilate_time(t_in_a, v_a_in_b, s_in_a):
     return dilate(t_in_a + t_phase(v_a_in_b, s_in_a), mag(v_a_in_b))
 
 # What is contraction and when does it apply?
-# Point: When a point is defined with a position or time in the current frame and measured in a foreign frame's axis of space or time, that point's position or time is smaller in the foreign frame.
+# Point: When a point is defined with a position or time in the current frame which is measured in a foreign frame's axis of space or time, that position or time is smaller in the foreign frame.
     # See transform with vs. without acceleration above.
-# Length/lifespan: When a point is defined with a position or time in the foreign frame and measured in the current frame's axis of space or time, that point's position or time is smaller in the current frame.
+# Length/lifespan: When a point is defined with a position or time in the foreign frame which is measured in the current frame's axis of space or time, that position or time is smaller in the current frame.
 
 # Transform current frame A to foreign frame B
 #   Relative contraction: A observes a point as having a certain position in A, and a smaller position in B

@@ -92,24 +92,25 @@ v_hib_in_tib = -v_tib_in_hib
 v_hib_in_hob_trav = np.array(v_sum(v_hib_in_tib, v_tib_in_hob_trav), dtype=np.float32)
 v_hob_in_hib_trav = -v_hib_in_hob_trav
 
+# Calculate pos and time of traveller's turnaround point; pos is relative to traveller at the beginning of its journey
+v_hob_in_tob = -v_tob_in_hob
+s_tap_in_tob = contract_space(s_tap_in_hob, v_hob_in_tob, s_sep_in_hob)
+t_obj_in_tob = contract_time(t_obj_in_hob, v_hob_in_tob, s_sep_in_hob)
+#s_sep_in_tob = s_sep_in_hob
+#t_obj_in_tob = (s_tap_in_tob[0] - s_sep_in_tob[0]) / -v_hob_in_tob[0]
+
 # Set out-bound traveller in its own frame
 tob_frame = {}
 tob_frame['tob'] = Point([0,0,0], [0,0,0], 0)
 
 # Calculate out-bound journey of home in traveller frame
-v_hob_in_tob = -v_tob_in_hob
 s_hob_in_tob = contract_space(hob_frame['hob'].pos, v_hob_in_tob, hob_frame['hob'].time)
 t_hob_in_tob = contract_time(hob_frame['hob'].time, v_hob_in_tob, hob_frame['hob'].pos)
 tob_frame['hob'] = Point(v_hob_in_tob, s_hob_in_tob, t_hob_in_tob)
 #tob_frame['hob'] = hob_frame['hob'].new_frame(v_hob_in_tob)
 
-# Calculate pos and time of traveller's turnaround point; pos is relative to traveller at the beginning of its journey
-s_tap_in_tob = contract_space(s_tap_in_hob, v_hob_in_tob, hob_frame['tob'].time)
-t_tap_in_tob = (s_tap_in_tob[0] - tob_frame['tob'].pos[0]) / -v_hob_in_tob[0]
-#t_tap_in_tob = contract_time(t_tap_in_hob, v_hob_in_tob, hob_frame['tob'].pos)
-
 # Calculate time steps for trajectory calculations
-t_steps_tob_in_tob = np.linspace(0, t_tap_in_tob, 100)
+t_steps_tob_in_tob = np.linspace(0, t_obj_in_tob, 100)
 t_steps_tib_in_tib = t_steps_tob_in_tob
 
 # Calculate out-bound trajectories in traveller frame
@@ -117,7 +118,7 @@ traj_hob_in_tob = tob_frame['hob'].trajectory(t_steps_tob_in_tob)
 
 # Set in-bound traveller in its own frame
 tib_frame = {}
-tib_frame['tib'] = Point([0,0,0], [0,0,0], t_tap_in_tob)
+tib_frame['tib'] = Point([0,0,0], [0,0,0], t_obj_in_tob)
 
 # Calculate in-bound home journey in traveller frame
 v_hib_in_tib = -v_tib_in_hib
