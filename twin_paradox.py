@@ -141,9 +141,10 @@ t_fj_in_tob = dilate_time(t_obj_in_hob + t_ibj_in_hib_stationary, v_home_in_tob,
 path_home_in_tob = Path.create_path(s_sep_in_tob, t_hob_in_tob, [t_fj_in_tob], [v_home_in_tob])
 
 s_zero = np.array([0,0,0], dtype=np.float32)
-# t_obj_in_tob is contracted because it is a function of the time that passes at the origin in the tob (native) frame, i.e. it's the presence duration of a length of space in the home frame
-# t_ibj_in_tob is dilated because it is a function of the time that passes at the origin in the tib (foreign) frame
+# t_obj_in_tob is contracted because it is a function of the time that passes in the home frame, at position 0 in the tob (native, unknown) frame, i.e. it's the presence duration of a distance
+# t_ibj_in_tob is dilated because it is a function of the time that passes at position 0 in the tib (foreign, known) frame
 t_ibj_in_tob = dilate_time(t_ibj_in_tib_trav, v_tib_in_tob, s_zero)
+# TODO: Ultimately, the ib journey time should probably be calculated by taking the distance between tib and hib and dividing by their velocity difference. This way, no assumption is made about the final result before it is calculated. The same thing should be done for the obj in the tib frame, since the tib start values are not defined before the tap until then.
 path_trav_in_tob = Path.create_path(s_sep_in_tob, t_tob_in_tob, [t_obj_in_tob, t_ibj_in_tob], [v_zero, v_tib_in_tob])
 
 
