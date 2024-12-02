@@ -97,3 +97,21 @@ class Path:
         pos = np.concatenate((self.pos, more.pos))
         time = np.concatenate((self.time, more.time))
         return Path(pos, time)
+    
+    def concatenate_list(paths):
+        pos = np.concatenate([path.pos for path in paths])
+        time = np.concatenate([path.time for path in paths])
+        return Path(pos, time)
+    
+    def create_path(s_start, t_start, segment_durations, segment_velocities, tick_step=0.1, v_axis=0):
+        t_segment = t_start
+        s_segment = s_start
+        trajectories = []
+        for segment in range(len(segment_durations)):
+            t_steps = np.arange(0, segment_durations[segment], dilate(tick_step, segment_velocities[segment][v_axis]))
+            frame = Point(segment_velocities[segment], s_segment, t_segment)
+            trajectories.append(frame.trajectory(t_steps))
+            t_segment += segment_durations[segment]
+            s_segment += segment_velocities[segment] * segment_durations[segment]
+        trajectories.append(Path([s_segment], [t_segment])) # Endpoint that is intended to be excluded from tick marks
+        return Path.concatenate_list(trajectories)

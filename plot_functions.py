@@ -23,19 +23,18 @@ def plot_3d_box(ax_3d, position, length):
     ax_3d.set_zlabel('z')
     ax_3d.set_aspect('equal')
 
-def plot_steps(ax_st, trajectories, axis):
-    x_steps = np.stack([t.pos[:, axis] for t in trajectories], axis=0)
-    ct_steps = np.stack([c * t.time for t in trajectories], axis=0)
+def plot_steps(ax_st, paths, v_axis=0):
+    x_steps = np.stack([p.pos[:, v_axis] for p in paths], axis=0)
+    ct_steps = np.stack([c * p.time for p in paths], axis=0)
     ax_st.plot(x_steps, ct_steps, 'r')
     ax_st.set_xlabel('x')
     ax_st.set_ylabel('ct')
     ax_st.set_aspect('equal')
     plt.grid()
 
-def plot_trajectories(ax_st, trajectories, axis):
-    x_trajs = np.stack([t.pos[:, axis] for t in trajectories], axis=1)
-    ct_trajs = np.stack([c * t.time for t in trajectories], axis=1)
-    ax_st.plot(x_trajs, ct_trajs, 'r')
+def plot_paths(ax_st, paths, v_axis=0):
+    for path in paths:
+        ax_st.plot(path.pos[:, v_axis], c * path.time, 'r')
     ax_st.set_xlabel('x')
     ax_st.set_ylabel('ct')
     ax_st.set_aspect('equal')
