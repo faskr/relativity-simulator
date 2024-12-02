@@ -36,7 +36,6 @@ s_tap_in_hib_stationary = contract_space(s_tap_in_hob, v_hob_in_hib_stationary, 
 s_sep_in_hib_stationary = contract_space(s_sep_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].time)
 t_ibj_in_hib_stationary = (s_sep_in_hib_stationary[0] - s_tap_in_hib_stationary[0]) / v_tib_in_hib_x
 
-# TESTING OUT
 t_hob_in_hob = 0
 v_zero = np.array([0,0,0], dtype=np.float32)
 path_home_in_home = Path.create_path(s_sep_in_hob, t_hob_in_hob, [t_obj_in_hob, t_ibj_in_hib_stationary], [v_zero, v_zero])
@@ -48,38 +47,6 @@ path_trav_in_home = Path.create_path(s_sep_in_hob, t_tob_in_hob, [t_obj_in_hob, 
 # TODO: Generalize these comments about the origin of acceleration and put them somewhere for reference; it's a useful concept
 # Length and presence contraction: sep and tap are defined in hob; in a simultaneous point in time in hib, sep and tap are closer to the origin of acceleration (i.e. where acceleration is observed)
 # In any given [space/time] instant in hib, sep and tap are closer to the origin and each other [in time/space] (if not the same distance) than in any given instant in hob
-
-# In-bound home point in the home frame where home never accelerates
-hib_frame_stationary = {}
-t_hib_in_hib_stationary = contract_time(t_obj_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].pos)
-hib_frame_stationary['hib'] = Point([0,0,0], [0,0,0], t_hib_in_hib_stationary)
-
-# Time steps for trajectory calculations
-t_steps_ob_in_hob = np.linspace(0, t_obj_in_hob, 100)
-t_steps_ib_in_hib_stationary = np.linspace(0, t_ibj_in_hib_stationary, 100)
-t_steps_ob_in_home = t_steps_ob_in_hob
-t_steps_ib_in_home = t_steps_ib_in_hib_stationary
-
-# Calculate home trajectories in home and concatenate to path
-traj_hob_in_home = hob_frame['hob'].trajectory(t_steps_ob_in_home)
-traj_hib_in_home = hib_frame_stationary['hib'].trajectory(t_steps_ib_in_home)
-#path_home_in_home = traj_hob_in_home.concatenate(traj_hib_in_home)
-
-# Calculate out-bound traveller trajectory in home
-v_tob_in_hob = np.array([v_tob_in_hob_x,0,0], dtype=np.float32)
-hob_frame['tob'] = Point(v_tob_in_hob, s_sep_in_hob, 0)
-traj_tob_in_home = hob_frame['tob'].trajectory(t_steps_ob_in_home)
-
-# Calculate in-bound traveller trajectory in home
-v_tib_in_hib = np.array([v_tib_in_hib_x,0,0], dtype=np.float32)
-# Continuing to calculate cross-frame coordinates from trajectories, not transforms
-# I think this is because transforms disagree with frames about how much time elapsed, so the turnaround point in one frame would be a later point in the other
-t_tib_in_hib_stationary = t_hib_in_hib_stationary
-hib_frame_stationary['tib'] = Point(v_tib_in_hib, s_tap_in_hib_stationary, t_tib_in_hib_stationary)
-traj_tib_in_home = hib_frame_stationary['tib'].trajectory(t_steps_ib_in_home)
-
-## Concatenate trajectories to form path
-#path_trav_in_home = traj_tob_in_home.concatenate(traj_tib_in_home)
 
 
 ### Traveller Plot
@@ -106,7 +73,7 @@ tob_frame['tob'] = Point([0,0,0], [0,0,0], 0)
 # In-Bound Journey
 
 s_tap_in_tob = contract_space(s_tap_in_hob, v_hob_in_tob, s_sep_in_hob)
-s_tap_in_tib_trav = contract_space(s_tap_in_tob, v_tob_in_tib_trav, tob_frame['tob'].time)
+s_tap_in_tib_trav = contract_space(s_tap_in_tob, v_tob_in_tib_trav, tob_frame['tob'].time) # TODO: in tib, tap is 0 and sep is negative
 s_sep_in_tob = s_sep_in_hob # TODO: use v_tob_in_hob
 s_sep_in_tib_trav = contract_space(s_sep_in_tob, v_tob_in_tib_trav, tob_frame['tob'].time)
 t_ibj_in_tib_trav = (s_sep_in_tib_trav[0] - s_tap_in_tib_trav[0]) / v_tib_in_hib_x
@@ -146,18 +113,38 @@ traj_tib_in_trav = tib_frame_trav['tib'].trajectory(t_steps_ib_in_trav)
 path_home_in_trav = traj_hob_in_trav.concatenate(traj_hib_in_trav)
 path_trav_in_trav = traj_tob_in_trav.concatenate(traj_tib_in_trav)
 
+t_tob_in_tob = 0
+path_trav_in_trav = Path.create_path(s_sep_in_tob, t_tob_in_tob, [t_obj_in_tob, t_ibj_in_tib_trav], [v_zero, v_zero])
+t_hob_in_tob = 0
+v_hob_in_tob = -v_tob_in_hob
+v_hib_in_tib = -v_tib_in_hib
+path_home_in_trav = Path.create_path(s_sep_in_tob, t_hob_in_tob, [t_obj_in_tob, t_ibj_in_tib_trav], [v_hob_in_tob, v_hib_in_tib])
+
 
 ### Out-Bound Traveller Plot
 
 v_hib_in_tob = v_sum(v_hib_in_hob_stationary, v_hob_in_tob)
 tob_frame['hib'] = Point(v_hib_in_tob, traj_hob_in_trav.pos[-1,:], traj_hob_in_trav.time[-1])
 traj_hib_in_tob = tob_frame['hib'].trajectory(t_steps_ib_in_tib_trav)
+
 v_tib_in_hob = v_sum(v_tib_in_hib, v_hib_in_hob_stationary)
 v_tib_in_tob = v_sum(v_tib_in_hob, v_hob_in_tob)
 tob_frame['tib'] = Point(v_tib_in_tob, traj_tob_in_trav.pos[-1,:], traj_tob_in_trav.time[-1])
 traj_tib_in_tob = tob_frame['tib'].trajectory(t_steps_ib_in_tib_trav)
+
 path_home_in_tob = traj_hob_in_trav.concatenate(traj_hib_in_tob)
 path_trav_in_tob = traj_tob_in_trav.concatenate(traj_tib_in_tob)
+
+
+v_home_in_tob = v_hob_in_tob
+t_fj_in_tob = dilate_time(t_obj_in_hob + t_ibj_in_hib_stationary, v_home_in_tob, s_sep_in_hib_stationary)
+path_home_in_tob = Path.create_path(s_sep_in_tob, t_hob_in_tob, [t_fj_in_tob], [v_home_in_tob])
+
+s_zero = np.array([0,0,0], dtype=np.float32)
+# t_obj_in_tob is contracted because it is calculated based off of the time that passes at the origin in the trav frame, i.e. it's the presence duration of a length of space in the home frame
+# t_ibj_in_tob is dilated because it is calculated based off of the time that passes at the origin in the tib frame
+t_ibj_in_tob = dilate_time(t_ibj_in_tib_trav, v_tib_in_tob, s_zero)
+path_trav_in_tob = Path.create_path(s_sep_in_tob, t_tob_in_tob, [t_obj_in_tob, t_ibj_in_tob], [v_zero, v_tib_in_tob])
 
 
 ### In-Bound Traveller Plot
@@ -165,6 +152,21 @@ path_trav_in_tob = traj_tob_in_trav.concatenate(traj_tib_in_tob)
 #v_tob_in_tib = -v_tib_in_tob
 #v_hob_in_tib = v_sum(v_hob_in_tob, v_tob_in_tib)
 #tib_frame['hob'] = Point(v_hob_in_tib, )
+
+v_home_in_tib = v_hib_in_tib
+t_fj_in_tib = dilate_time(t_obj_in_hob + t_ibj_in_hib_stationary, v_home_in_tib, s_sep_in_hib_stationary)
+v_tob_in_tib = -v_tib_in_tob
+# TODO: implement transform function between frames with mismatching origins
+#s_sep_in_tib = 
+#t_hob_in_tib = 
+#path_home_in_tib = Path.create_path(s_sep_in_tib, t_hob_in_tib, [t_fj_in_tib], [v_home_in_tib])
+
+s_zero = np.array([0,0,0], dtype=np.float32)
+# See above explanations for why dilation and contraction are both used here
+# TODO: probably figure out some function or interface that more intuitively and easily/readily calculates s or t without having to do all this thought and explanation
+t_obj_in_tib = dilate_time(t_obj_in_tob, v_tob_in_tib, s_zero)
+t_ibj_in_tib = contract_time(t_ibj_in_hib_stationary, v_hib_in_tib, s_zero)
+#path_trav_in_tib = Path.create_path(s_sep_in_tib, t_tob_in_tib, [t_obj_in_tib, t_ibj_in_tib], [v_tob_in_tib, v_zero])
 
 # ==== Output ====
 
@@ -179,11 +181,13 @@ plot_paths(ax_journey, (path_home_in_home, path_trav_in_home))
 
 ax_journey = fig.add_subplot(2,2,2)
 ax_journey.set_title('Journey in Traveller Frame')
-plot_spacetime(ax_journey, (path_home_in_trav, path_trav_in_trav), do_cones=False)
+#plot_spacetime(ax_journey, (path_home_in_trav, path_trav_in_trav), do_cones=False)
+plot_paths(ax_journey, (path_trav_in_trav, path_home_in_trav))
 
 ax_journey = fig.add_subplot(2,2,3)
 ax_journey.set_title('Journey in Out-Bound Traveller Frame')
-plot_spacetime(ax_journey, (path_home_in_tob, path_trav_in_tob), do_cones=False)
+#plot_spacetime(ax_journey, (path_home_in_tob, path_trav_in_tob), do_cones=False)
+plot_paths(ax_journey, (path_home_in_tob, path_trav_in_tob))
 
 # Plot settings
 plt.subplots_adjust(wspace=0, hspace=0.3)

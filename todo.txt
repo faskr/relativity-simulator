@@ -8,6 +8,10 @@ Write a function that transforms one frame to another when the origins are not c
     Transform A => B using Lorentz transform
     Transform B => B' using additive transform above
 Write a function that transforms for cases of contraction, and rename new_frame
+Go through twin paradox:
+    Generalize as much as possible
+    Minimize lines that are merely "x = y" as much as possible; usually they should be using some kind of transform
+    Minimize hardcoded values and v_zero/s_zero
 
 
 Products of twin paradox script

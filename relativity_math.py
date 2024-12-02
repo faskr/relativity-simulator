@@ -39,12 +39,12 @@ def s_phase(v_a_in_b, t_in_a):
 #   Relative dilation: B observes a point as having a certain position in A, and a larger position in B
 #   Absolute deceleration: A has decelerated to B; A is further from the frame of the object at s than B; the difference has objectively decreased; the increase in B = -v_a_in_b
 #   Length dilation: B observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a larger difference measured in A
-def dilate_space(s_in_a, v_a_in_b, t_in_a):
-    return dilate(s_in_a + s_phase(v_a_in_b, t_in_a), v_a_in_b)
+def dilate_space(s_p_in_a, v_a_in_b, t_p_in_a):
+    return dilate(s_p_in_a + s_phase(v_a_in_b, t_p_in_a), v_a_in_b)
 
 # Transform foreign frame A to current frame B
-def dilate_time(t_in_a, v_a_in_b, s_in_a):
-    return dilate(t_in_a + t_phase(v_a_in_b, s_in_a), mag(v_a_in_b))
+def dilate_time(t_p_in_a, v_a_in_b, s_p_in_a):
+    return dilate(t_p_in_a + t_phase(v_a_in_b, s_p_in_a), mag(v_a_in_b))
 
 # What is contraction and when does it apply?
 # Point: When a point is defined with a position or time in the current frame which is measured in a foreign frame's axis of space or time, that position or time is smaller in the foreign frame.
@@ -105,7 +105,7 @@ class Path:
     
     def create_path(s_start, t_start, segment_durations, segment_velocities, tick_step=0.1, v_axis=0):
         t_segment = t_start
-        s_segment = s_start
+        s_segment = s_start.copy()
         trajectories = []
         for segment in range(len(segment_durations)):
             t_steps = np.arange(0, segment_durations[segment], dilate(tick_step, segment_velocities[segment][v_axis]))
