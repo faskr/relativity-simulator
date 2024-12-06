@@ -10,6 +10,9 @@ v_tob_in_hob_x = c * 0.5
 v_tib_in_hib_x = c * -0.5
 s_sep_in_hob_x = 0 # Start and end point in out-bound home frame
 s_tap_in_hob_x = 50 # Turn-around point in out-bound home frame
+# TODO: use these velocities to replace assumptions below with velocity-based calculations
+v_sep_in_hob_x = 0
+v_tap_in_hob_x = 0
 
 # ==== Scene ====
 
@@ -22,9 +25,20 @@ v_hob_in_hib_stationary = -v_hib_in_hob_stationary
 # Duration of out-bound journey in home frame
 t_obj_in_hob = (s_tap_in_hob_x - s_sep_in_hob_x) / v_tob_in_hob_x
 
+# TODO: this needs to incorporate v_sep_in_hob_x to transform s_sep_in_hob_x
+# TODO: probably need to calculate v_tib_in_hob_x based on v_hob_in_hib_stationary
+t_ibj_in_hob_s = (s_sep_in_hob_x - s_tap_in_hob_x) / -v_tob_in_hob_x # needs work
+
 # Out-bound home point in home frame
-hob_frame = {}
-hob_frame['hob'] = Point([0,0,0], [s_sep_in_hob_x,0,0], 0)
+hob_frame = Frame('hob', pos=[s_sep_in_hob_x,0,0])
+hob_frame['sp'] = Point(pos=[s_sep_in_hob_x,0,0], time=0)
+hob_frame['cp'] = Point(pos=[s_tap_in_hob_x,0,0], time=t_obj_in_hob)
+# Have to calculate hib in hob first before in its own frame, because s_sep and therefore s_hib is given in hob
+# TODO: these lines need to incorporate v_sep_in_hob_x to transform s_sep_in_hob_x
+hob_frame['ep_s'] = Point(vel=v_hib_in_hob_stationary, pos=[s_sep_in_hob_x,0,0], time=t_ibj_in_hob_s)
+hob_frame['hib_s'] = Point(vel=v_hib_in_hob_stationary, pos=[s_sep_in_hob_x,0,0], time=t_obj_in_hob) # stationary hib
+hib_in_hib_s = dilate_to_rest(hob_frame['hib_s']) # TODO: probably rename dilate_to_rest to transform_to_rest
+hib_frame_s = Frame('hib_s', hib_in_hib_s.pos, hib_in_hib_s.time) # stationary hib frame
 
 # Duration of in-bound journey in home frame
 s_tap_in_hob = np.array([s_tap_in_hob_x,0,0], dtype=np.float32)
@@ -32,13 +46,11 @@ s_sep_in_hob = np.array([s_sep_in_hob_x,0,0], dtype=np.float32)
 # Contract (supposing v_hob_in_hib =/= 0):
 #   s_tap and s_sep are defined in hob, but measured simultaneously in hib, i.e. s_sep and s_tap are lengths
 #   t_ibj in hob is defined in hob, but is then measured at a point in space that is the same in hib throughout the measurement, i.e. t_ibj is a presence duration
-s_tap_in_hib_stationary = contract_space(s_tap_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].time)
-s_sep_in_hib_stationary = contract_space(s_sep_in_hob, v_hob_in_hib_stationary, hob_frame['hob'].time)
-t_ibj_in_hib_stationary = (s_sep_in_hib_stationary[0] - s_tap_in_hib_stationary[0]) / v_tib_in_hib_x
-
+hib_frame_s['cp'] = transform(hob_frame['cp'], v_hob_in_hib_stationary) #contract_space(hob_frame['cp'].pos, v_hob_in_hib_stationary, hob_frame['cp'].time)
+hib_frame_s['ep_s'] = transform(hob_frame['ep_s'], v_hob_in_hib_stationary) #contract_space(hob_frame['sp'].pos, v_hob_in_hib_stationary, hob_frame['sp'].time)
+t_ibj_in_hib_stationary = (hib_frame_s['ep_s'].pos[0] - hib_frame_s['cp'].pos[0]) / v_tib_in_hib_x
 t_hob_in_hob = 0
-v_zero = np.array([0,0,0], dtype=np.float32)
-path_home_in_home = Path.create_path(s_sep_in_hob, t_hob_in_hob, [t_obj_in_hob, t_ibj_in_hib_stationary], [v_zero, v_zero])
+path_home_in_home = Path.create_path(hob_frame['sp'].pos, hob_frame['sp'].time, [t_obj_in_hob, t_ibj_in_hib_stationary], [hob_frame['hob'].vel, hib_frame_s['hib_s'].vel])
 t_tob_in_hob = 0
 v_tob_in_hob = np.array([v_tob_in_hob_x,0,0], dtype=np.float32)
 v_tib_in_hib = np.array([v_tib_in_hib_x,0,0], dtype=np.float32)
@@ -67,8 +79,7 @@ t_obj_in_tob = contract_time(t_obj_in_hob, v_hob_in_tob, s_sep_in_hob)
 #t_obj_in_tob = (s_tap_in_tob[0] - s_sep_in_tob[0]) / -v_hob_in_tob[0]
 
 # Set out-bound traveller in its own frame
-tob_frame = {}
-tob_frame['tob'] = Point([0,0,0], [0,0,0], 0)
+tob_frame = Frame('tob')
 
 # In-Bound Journey
 
@@ -79,9 +90,8 @@ s_sep_in_tib_trav = contract_space(s_sep_in_tob, v_tob_in_tib_trav, tob_frame['t
 t_ibj_in_tib_trav = (s_sep_in_tib_trav[0] - s_tap_in_tib_trav[0]) / v_tib_in_hib_x
 
 # Set in-bound traveller in its own frame
-tib_frame_trav = {}
 t_tib_in_tib_trav = contract_time(t_obj_in_tob, v_tob_in_tib_trav, tob_frame['tob'].pos)
-tib_frame_trav['tib'] = Point([0,0,0], [0,0,0], t_tib_in_tib_trav)
+tib_frame_trav = Frame('tib', time=t_tib_in_tib_trav)
 
 # Trajectories
 
@@ -94,7 +104,8 @@ t_steps_ib_in_trav = t_steps_ib_in_tib_trav
 # Calculate out-bound journey of home in traveller frame
 s_hob_in_tob = contract_space(hob_frame['hob'].pos, v_hob_in_tob, hob_frame['hob'].time)
 t_hob_in_tob = contract_time(hob_frame['hob'].time, v_hob_in_tob, hob_frame['hob'].pos)
-tob_frame['hob'] = Point(v_hob_in_tob, s_hob_in_tob, t_hob_in_tob)
+#tob_frame['hob'] = Point(v_hob_in_tob, s_hob_in_tob, t_hob_in_tob)
+tob_frame['hob'] = transform(hob_frame['hob'], v_hob_in_tob)
 #tob_frame['hob'] = hob_frame['hob'].new_frame(v_hob_in_tob)
 
 # Calculate out-bound trajectory in traveller frame
@@ -114,6 +125,7 @@ path_home_in_trav = traj_hob_in_trav.concatenate(traj_hib_in_trav)
 path_trav_in_trav = traj_tob_in_trav.concatenate(traj_tib_in_trav)
 
 t_tob_in_tob = 0
+v_zero = np.array([0,0,0], dtype=np.float32)
 path_trav_in_trav = Path.create_path(s_sep_in_tob, t_tob_in_tob, [t_obj_in_tob, t_ibj_in_tib_trav], [v_zero, v_zero])
 t_hob_in_tob = 0
 v_hob_in_tob = -v_tob_in_hob
@@ -137,7 +149,7 @@ path_trav_in_tob = traj_tob_in_trav.concatenate(traj_tib_in_tob)
 
 
 v_home_in_tob = v_hob_in_tob
-t_fj_in_tob = dilate_time(t_obj_in_hob + t_ibj_in_hib_stationary, v_home_in_tob, s_sep_in_hib_stationary)
+t_fj_in_tob = dilate_time(t_obj_in_hob + t_ibj_in_hib_stationary, v_home_in_tob, hib_frame_s['ep_s'].pos)
 path_home_in_tob = Path.create_path(s_sep_in_tob, t_hob_in_tob, [t_fj_in_tob], [v_home_in_tob])
 
 # t_obj_in_tob is contracted because it is a function of the time that passes in the home frame, at position 0 in the tob (native, unknown) frame, i.e. it's the presence duration of a distance
@@ -159,7 +171,7 @@ path_trav_in_tob = Path.create_path(s_sep_in_tob, t_tob_in_tob, [t_obj_in_tob, t
 #tib_frame['hob'] = Point(v_hob_in_tib, )
 
 v_home_in_tib = v_hib_in_tib
-t_fj_in_tib = dilate_time(t_obj_in_hob + t_ibj_in_hib_stationary, v_home_in_tib, s_sep_in_hib_stationary)
+t_fj_in_tib = dilate_time(t_obj_in_hob + t_ibj_in_hib_stationary, v_home_in_tib, hib_frame_s['ep_s'].pos)
 v_tob_in_tib = -v_tib_in_tob
 # TODO: implement transform function between frames with mismatching origins
 #s_sep_in_tib = 

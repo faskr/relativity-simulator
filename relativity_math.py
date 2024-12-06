@@ -40,6 +40,7 @@ def s_phase(v_a_in_b, t_in_a):
 #   Absolute deceleration: A has decelerated to B; A is further from the frame of the object at s than B; the difference has objectively decreased; the increase in B = -v_a_in_b
 #   Length dilation: B observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a larger difference measured in A
 def dilate_space(s_p_in_a, v_a_in_b, t_p_in_a):
+# TODO: probably use "- phase(v_b_in_a)" instead
     return dilate(s_p_in_a + s_phase(v_a_in_b, t_p_in_a), v_a_in_b)
 
 # Transform foreign frame A to current frame B
@@ -62,8 +63,78 @@ def contract_space(s_in_a, v_a_in_b, t_in_a):
 def contract_time(t_in_a, v_a_in_b, s_in_a):
     return contract(t_in_a + t_phase(v_a_in_b, s_in_a), mag(v_a_in_b))
 
+# NOT SURE IF I'LL KEEP THIS
+def dilate_space_to_rest(s_point_in_motion, v_point_in_motion, t_point_in_motion):
+    v_motion_in_rest = -v_point_in_motion
+    return dilate_space(s_point_in_motion, v_motion_in_rest, t_point_in_motion)
+
+def contract_space_to_motion(s_point_in_rest, v_point_in_motion, t_point_in_rest):
+    return contract_space(s_point_in_rest, v_point_in_motion, t_point_in_rest)
+
+def dilate_time_to_rest(t_point_in_motion, v_point_in_motion, s_point_in_motion):
+    v_motion_in_rest = -v_point_in_motion
+    return dilate_time(t_point_in_motion, v_motion_in_rest, s_point_in_motion)
+
+def contract_time_to_motion(t_point_in_rest, v_point_in_motion, s_point_in_rest):
+    return contract_time(t_point_in_rest, v_point_in_motion, s_point_in_rest)
+
+def transform_space(s_point_in_initial, v_point_in_initial, t_point_in_initial, v_point_in_final):
+    s_point_in_rest = dilate_space_to_rest(s_point_in_initial, v_point_in_initial, t_point_in_initial)
+    t_point_in_rest = dilate_time_to_rest(t_point_in_initial, v_point_in_initial, s_point_in_initial)
+    s_point_in_final = contract_space_to_motion(s_point_in_rest, v_point_in_final, t_point_in_rest)
+    return s_point_in_final
+
+def transform_time(t_point_in_initial, v_point_in_initial, s_point_in_initial, v_point_in_final):
+    t_point_in_rest = dilate_time_to_rest(t_point_in_initial, v_point_in_initial, s_point_in_initial)
+    s_point_in_rest = dilate_space_to_rest(s_point_in_initial, v_point_in_initial, t_point_in_initial)
+    t_point_in_final = contract_time_to_motion(t_point_in_rest, v_point_in_final, s_point_in_rest)
+    return t_point_in_final
+########
+
+def dilate_to_rest(point_in_motion):
+    v_motion_in_rest = -point_in_motion.vel
+    return Point(
+        [0,0,0],
+        dilate_space(point_in_motion.pos, v_motion_in_rest, point_in_motion.time),
+        dilate_time(point_in_motion.time, v_motion_in_rest, point_in_motion.pos)
+    )
+
+def contract_to_motion(point_in_rest, v_point_in_motion):
+    return Point(
+        v_point_in_motion,
+        contract_space(point_in_rest.pos, v_point_in_motion, point_in_rest.time),
+        contract_time(point_in_rest.time, v_point_in_motion, point_in_rest.pos)
+    )
+
+# Note: assumes initial & final have the same origin
+def transform(point_in_initial, v_point_in_final):
+    point_in_rest = dilate_to_rest(point_in_initial)
+    point_in_final = contract_to_motion(point_in_rest, v_point_in_final)
+    return point_in_final
+
+class Frame():
+    points = {}
+    def __init__(self, name, pos=[0,0,0], time=0):
+        self.name = name
+        self.point = Point([0,0,0], pos, time)
+        self[name] = self.point
+    
+    def __setitem__(self, point_name, point):
+        self.points[point_name] = point
+
+    def __getitem__(self, point_name):
+        return self.points[point_name]
+
+    def in_frame(self, other):
+        if self.name in other:
+            return other[self.name]
+        if other.name in self:
+            other[self.name] = transform(self, -self[other.name].vel)
+            return other[self.name]
+        raise Exception(f'Velocity between frames {self.name} and {other.name} has not been defined')
+
 class Point:
-    def __init__(self, vel, pos, time):
+    def __init__(self, vel=[0,0,0], pos=[0,0,0], time=0):
         self.vel = np.array(vel, dtype=np.float32)
         self.pos = np.array(pos, dtype=np.float32)
         self.time = time
