@@ -108,6 +108,7 @@ def contract_to_motion(point_in_rest, v_point_in_motion):
 
 # Note: assumes initial & final have the same origin
 def transform(point_in_initial, v_point_in_final):
+    # TODO: Is there a way to simplify this? I think only contraction or dilation is technically necessary, not both. Involves v_init_in_final?
     point_in_rest = dilate_to_rest(point_in_initial)
     point_in_final = contract_to_motion(point_in_rest, v_point_in_final)
     return point_in_final
@@ -133,6 +134,7 @@ class Frame():
             return other[self.name]
         raise Exception(f'Velocity between frames {self.name} and {other.name} has not been defined')
 
+# TODO: Instead of Point, have Event(pos, time), and maybe something like Capture(vel, pos, time)
 class Point:
     def __init__(self, vel=[0,0,0], pos=[0,0,0], time=0):
         self.vel = np.array(vel, dtype=np.float32)

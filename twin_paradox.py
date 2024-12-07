@@ -8,6 +8,7 @@ from plot_functions import *
 # Manual settings
 v_tob_in_hob_x = c * 0.5
 v_tib_in_hib_x = c * -0.5
+# TODO: sep -> hob & hep, tap -> cib (& cob)
 s_sep_in_hob_x = 0 # Start and end point in out-bound home frame
 s_tap_in_hob_x = 50 # Turn-around point in out-bound home frame
 # TODO: use these velocities to replace assumptions below with velocity-based calculations
