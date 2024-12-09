@@ -3,7 +3,7 @@ from vector_math import *
 # Speed of light
 c = 100
 
-# Velocity addition formula
+# Velocity addition formula; rename to transform_velocity?
 def v_sum(v_a_in_b, v_b_in_c):
     return (v_a_in_b + v_b_in_c) / (1 + v_a_in_b * v_b_in_c / c**2)
 
@@ -39,12 +39,12 @@ def s_phase(v_a_in_b, t_in_a):
 #   Relative dilation: B observes a point as having a certain position in A, and a larger position in B
 #   Absolute deceleration: A has decelerated to B; A is further from the frame of the object at s than B; the difference has objectively decreased; the increase in B = -v_a_in_b
 #   Length dilation: B observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a larger difference measured in A
-def dilate_space(s_p_in_a, v_a_in_b, t_p_in_a):
-# TODO: probably use "- phase(v_b_in_a)" instead
+def transform_space(s_p_in_a, v_a_in_b, t_p_in_a):
+# TODO: possibly use "- phase(v_b_in_a)" instead
     return dilate(s_p_in_a + s_phase(v_a_in_b, t_p_in_a), v_a_in_b)
 
 # Transform foreign frame A to current frame B
-def dilate_time(t_p_in_a, v_a_in_b, s_p_in_a):
+def transform_time(t_p_in_a, v_a_in_b, s_p_in_a):
     return dilate(t_p_in_a + t_phase(v_a_in_b, s_p_in_a), mag(v_a_in_b))
 
 # What is contraction and when does it apply?
@@ -56,62 +56,12 @@ def dilate_time(t_p_in_a, v_a_in_b, s_p_in_a):
 #   Relative contraction: A observes a point as having a certain position in A, and a smaller position in B
 #   Absolute acceleration: A has accelerated to B; B is further from the frame of the object at s than A; the difference has objectively increased; the increase in B = -v_a_in_b
 #   Length contraction: A observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a smaller difference measured in A
-def contract_space(s_in_a, v_a_in_b, t_in_a):
-    return contract(s_in_a + s_phase(v_a_in_b, t_in_a), v_a_in_b)
+def contract_space(s_in_a, v_a_in_b, t_in_b):
+    return contract(s_in_a, v_a_in_b) + s_phase(v_a_in_b, t_in_b)
 
 # Transform current frame A to foreign frame B
-def contract_time(t_in_a, v_a_in_b, s_in_a):
-    return contract(t_in_a + t_phase(v_a_in_b, s_in_a), mag(v_a_in_b))
-
-# NOT SURE IF I'LL KEEP THIS
-def dilate_space_to_rest(s_point_in_motion, v_point_in_motion, t_point_in_motion):
-    v_motion_in_rest = -v_point_in_motion
-    return dilate_space(s_point_in_motion, v_motion_in_rest, t_point_in_motion)
-
-def contract_space_to_motion(s_point_in_rest, v_point_in_motion, t_point_in_rest):
-    return contract_space(s_point_in_rest, v_point_in_motion, t_point_in_rest)
-
-def dilate_time_to_rest(t_point_in_motion, v_point_in_motion, s_point_in_motion):
-    v_motion_in_rest = -v_point_in_motion
-    return dilate_time(t_point_in_motion, v_motion_in_rest, s_point_in_motion)
-
-def contract_time_to_motion(t_point_in_rest, v_point_in_motion, s_point_in_rest):
-    return contract_time(t_point_in_rest, v_point_in_motion, s_point_in_rest)
-
-def transform_space(s_point_in_initial, v_point_in_initial, t_point_in_initial, v_point_in_final):
-    s_point_in_rest = dilate_space_to_rest(s_point_in_initial, v_point_in_initial, t_point_in_initial)
-    t_point_in_rest = dilate_time_to_rest(t_point_in_initial, v_point_in_initial, s_point_in_initial)
-    s_point_in_final = contract_space_to_motion(s_point_in_rest, v_point_in_final, t_point_in_rest)
-    return s_point_in_final
-
-def transform_time(t_point_in_initial, v_point_in_initial, s_point_in_initial, v_point_in_final):
-    t_point_in_rest = dilate_time_to_rest(t_point_in_initial, v_point_in_initial, s_point_in_initial)
-    s_point_in_rest = dilate_space_to_rest(s_point_in_initial, v_point_in_initial, t_point_in_initial)
-    t_point_in_final = contract_time_to_motion(t_point_in_rest, v_point_in_final, s_point_in_rest)
-    return t_point_in_final
-########
-
-def dilate_to_rest(point_in_motion):
-    v_motion_in_rest = -point_in_motion.vel
-    return Point(
-        [0,0,0],
-        dilate_space(point_in_motion.pos, v_motion_in_rest, point_in_motion.time),
-        dilate_time(point_in_motion.time, v_motion_in_rest, point_in_motion.pos)
-    )
-
-def contract_to_motion(point_in_rest, v_point_in_motion):
-    return Point(
-        v_point_in_motion,
-        contract_space(point_in_rest.pos, v_point_in_motion, point_in_rest.time),
-        contract_time(point_in_rest.time, v_point_in_motion, point_in_rest.pos)
-    )
-
-# Note: assumes initial & final have the same origin
-def transform(point_in_initial, v_point_in_final):
-    # TODO: Is there a way to simplify this? I think only contraction or dilation is technically necessary, not both. Involves v_init_in_final?
-    point_in_rest = dilate_to_rest(point_in_initial)
-    point_in_final = contract_to_motion(point_in_rest, v_point_in_final)
-    return point_in_final
+def contract_time(t_in_a, v_a_in_b, s_in_b):
+    return contract(t_in_a, mag(v_a_in_b)) + t_phase(v_a_in_b, s_in_b)
 
 class Frame():
     points = {}
@@ -145,9 +95,9 @@ class Point:
     # This function assumes that the origins of both frames are the same event, which isn't always the case
     def new_frame(self, v_old_in_new):
         return Point(
-            v_old_in_new,
-            dilate_space(self.pos, v_old_in_new, self.time),
-            dilate_time(self.time, v_old_in_new, self.pos)
+            v_sum(self.vel, v_old_in_new),
+            transform_space(self.pos, v_old_in_new, self.time),
+            transform_time(self.time, v_old_in_new, self.pos)
         )
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
