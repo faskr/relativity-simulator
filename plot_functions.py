@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from relativity_math import *
+from relativity import *
 
 def plot_3d_box(ax_3d, position, length):
     # Define coordinates and grids for box

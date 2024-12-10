@@ -1,5 +1,8 @@
 import numpy as np
 
+def vector(x, y, z):
+    return np.array([x, y, z], dtype=np.float32)
+
 # Scalar magnitude of vector
 # How is this different from norm exactly? Is transpose the only difference?
 def mag(v):

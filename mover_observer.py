@@ -1,6 +1,6 @@
 import numpy as np
 from vector_math import *
-from relativity_math import *
+from relativity import *
 from plot_functions import *
 
 # ==== Setup ====
@@ -31,8 +31,8 @@ ref_frame['obs'] = obs_frame['obs'].new_frame(v_obs_in_ref)
 
 # Calculate mover in observer frame
 v_ref_in_obs = -ref_frame['obs'].vel
-v_p1_in_obs = v_sum(ref_frame['p1'].vel, v_ref_in_obs)
-v_p2_in_obs = v_sum(ref_frame['p2'].vel, v_ref_in_obs)
+v_p1_in_obs = v_transform(ref_frame['p1'].vel, v_ref_in_obs)
+v_p2_in_obs = v_transform(ref_frame['p2'].vel, v_ref_in_obs)
 obs_frame['p1'] = mov_frame['p1'].new_frame(v_p1_in_obs)
 obs_frame['p2'] = mov_frame['p2'].new_frame(v_p2_in_obs)
 # Length of the mover in a simultaneous slice of time in the observer frame
