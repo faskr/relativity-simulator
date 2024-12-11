@@ -28,6 +28,22 @@ class Point:
             s_transform(self.pos, v_old_in_new, self.time),
             t_transform(self.time, v_old_in_new, self.pos)
         )
+    
+    def transform_length(self, v_old_in_new):
+        v_new_in_old = -v_old_in_new
+        v_old_in_rest = -self.vel
+        v_rest = 0
+        s_rest = s_transform(self.pos, v_old_in_rest, self.time)
+        t_rest = self.time
+        v_rest_in_old = self.vel
+        v_rest_in_new = v_transform(v_rest_in_old, v_old_in_new)
+        v_new_in_rest = v_transform(v_new_in_old, v_old_in_rest)
+        return Point(
+            v_transform(v_rest, v_rest_in_new),
+            # TODO: I think use contraction transform instead
+            s_transform(s_rest, v_rest_in_new, t_rest)/(gamma(v_rest_in_new)**2),
+            t_transform(t_rest, v_rest_in_new, s_rest)/(gamma(v_rest_in_new)**2)
+        )
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
     def trajectory(self, t_steps):
@@ -40,11 +56,12 @@ class Point:
         time = np.tile(self.time, (x_steps.size, 1)) + np.reshape(x_steps, (x_steps.size, 1)) / self.vel[0]
         return Path.from_lists(pos, time)
 
-    def trajectory_in_interval(self, t_diff, tick_step=0.1, v_axis=0):
-        t_steps = np.arange(0, t_diff, dilate(tick_step, self.vel[v_axis]))
-        pos = np.tile(self.pos, (t_steps.size, 1)) + matrix_from_vecs(t_steps, self.vel)
-        time = self.time + t_steps
-        return Path.from_lists(pos, time)
+    def trajectory_in_interval(self, other, tick_step=0.1, v_axis=0):
+        duration = other.time - self.time
+        t_steps = np.arange(0, duration, dilate(tick_step, self.vel[v_axis]))
+        #pos = np.tile(self.pos, (t_steps.size, 1)) + matrix_from_vecs(t_steps, self.vel)
+        #time = self.time + t_steps
+        return self.trajectory(t_steps)
 
     def convergence_time_with(self, other):
         s_diff_self_other = self.pos - other.pos
@@ -62,7 +79,7 @@ class Path:
         path.time = time
         return path
 
-    def append(self, pos, time):
+    def add_point(self, pos, time):
         self.pos = np.concatenate((self.pos, pos.reshape((1, 3))))
         self.time = np.concatenate((self.time, np.array([time])))
 
@@ -75,6 +92,12 @@ class Path:
         pos = np.concatenate([path.pos for path in paths])
         time = np.concatenate([path.time for path in paths])
         return Path.from_lists(pos, time)
+
+    def add_segment(self, p1, p2):
+        segment = p1.trajectory_in_interval(p2)
+        new_path = self.concatenate(segment)
+        self.pos = new_path.pos
+        self.time = new_path.time
 
     def create_path(s_start, t_start, segment_durations, segment_velocities, tick_step=0.1, v_axis=0):
         t_segment = t_start
@@ -108,8 +131,8 @@ class Frame():
     def add_point(self, name, vel=[0,0,0], pos=[0,0,0], time=0):
         self.points[name] = Point(vel, pos, time)
 
-    def add_path(self, name, path):
-        self.paths[name] = path
+    def add_path(self, name, point_name):
+        self.paths[name] = Path(self[point_name].pos, self[point_name].time)
 
     def in_frame(self, other):
         if self.name in other:

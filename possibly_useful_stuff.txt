@@ -1,0 +1,8 @@
+
+# Contract (supposing v_hob_in_hib =/= 0):
+#   s_tap and s_sep are defined in hob, but measured simultaneously in hib, i.e. s_sep and s_tap are lengths
+#   t_ibj in hob is defined in hob, but is then measured at a point in space that is the same in hib throughout the measurement, i.e. t_ibj is a presence duration
+
+# TODO: Generalize these comments about the origin of acceleration and put them somewhere for reference; it's a useful concept
+# Length and presence contraction: sep and tap are defined in hob; in a simultaneous point in time in hib, sep and tap are closer to the origin of acceleration (i.e. where acceleration is observed)
+# In any given [space/time] instant in hib, sep and tap are closer to the origin and each other [in time/space] (if not the same distance) than in any given instant in hob
