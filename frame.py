@@ -35,10 +35,10 @@ class Point:
         if direction == 'down':
             assert self.vel.all() == 0
         v_new = vector(0, 0, 0) if direction == 'up' else v_old_in_new if direction == 'down' else None
-        if dim_type == 'pos':
+        if dim_type == 'pos': # Intersection of new line of simultaneity with the same trajectory
             s_transform_fn = s_transform if direction == 'up' else s_transform_down if direction == 'down' else None
             t_transform_fn = lambda t, v, s: t
-        elif dim_type == 'time':
+        elif dim_type == 'time': # Intersection of new trajectory with the same line of simultaneity
             s_transform_fn = lambda s, v, t: s
             t_transform_fn = t_transform if direction == 'up' else t_transform_down if direction == 'down' else None
         return Point(
