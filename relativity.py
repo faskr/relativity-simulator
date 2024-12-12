@@ -58,9 +58,13 @@ def t_transform(t_p_in_a, v_a_in_b, s_p_in_a):
 #   Relative contraction: A observes a point as having a certain position in A, and a smaller position in B
 #   Absolute acceleration: A has accelerated to B; B is further from the frame of the object at s than A; the difference has objectively increased; the increase in B = -v_a_in_b
 #   Length contraction: A observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a smaller difference measured in A
-def contract_space(s_in_a, v_a_in_b, t_in_b):
-    return contract(s_in_a, v_a_in_b) + s_phase(v_a_in_b, t_in_b)
+
+# Transform object (as opposed to event): where is the object at the same point in time in the new frame (different point in time in the old)?
+def s_translate(s_p_in_a, v_a_in_b, t_p_in_a):
+    return contract(s_p_in_a + s_phase(v_a_in_b, t_p_in_a), v_a_in_b)
 
 # Transform current frame A to foreign frame B
-def contract_time(t_in_a, v_a_in_b, s_in_b):
-    return contract(t_in_a, mag(v_a_in_b)) + t_phase(v_a_in_b, s_in_b)
+
+# Transform object (as opposed to event): when is the object at the same point in space in the new frame (different point in space in the old)?
+def t_translate(t_p_in_a, v_a_in_b, s_p_in_a):
+    return contract(t_p_in_a + t_phase(v_a_in_b, s_p_in_a), mag(v_a_in_b))

@@ -30,19 +30,18 @@ class Point:
         )
     
     def transform_length(self, v_old_in_new):
-        v_new_in_old = -v_old_in_new
         v_old_in_rest = -self.vel
-        v_rest = 0
-        s_rest = s_transform(self.pos, v_old_in_rest, self.time)
-        t_rest = self.time
+        p_in_rest = Point(
+            0,
+            s_transform(self.pos, v_old_in_rest, self.time),
+            self.time
+        )
         v_rest_in_old = self.vel
         v_rest_in_new = v_transform(v_rest_in_old, v_old_in_new)
-        v_new_in_rest = v_transform(v_new_in_old, v_old_in_rest)
         return Point(
-            v_transform(v_rest, v_rest_in_new),
-            # TODO: I think use contraction transform instead
-            s_transform(s_rest, v_rest_in_new, t_rest)/(gamma(v_rest_in_new)**2),
-            t_transform(t_rest, v_rest_in_new, s_rest)/(gamma(v_rest_in_new)**2)
+            v_transform(p_in_rest.vel, v_rest_in_new),
+            s_translate(p_in_rest.pos, v_rest_in_new, p_in_rest.time),
+            p_in_rest.time
         )
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
