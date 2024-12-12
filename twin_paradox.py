@@ -81,13 +81,13 @@ hob_frame.paths['traveller'].add_point(hob_frame['tep_i'].pos, hob_frame['tep_i'
 ## Initialize frame
 
 v_hob_in_tob = -hob_frame['tob'].vel
-tob_in_tob = hob_frame['tob'].transform(v_hob_in_tob)
+tob_in_tob = hob_frame['tob'].translate_full('pos', v_hob_in_tob)
 tob_frame = Frame('tob', pos=tob_in_tob.pos, time=tob_in_tob.time)
 tob_frame.add_path('traveller', 'tob')
-hob_in_tob = hob_frame['hob'].transform(v_hob_in_tob)
+hob_in_tob = hob_frame['hob'].translate_full('pos', v_hob_in_tob)
 tob_frame.add_point('hob', vel=hob_in_tob.vel, pos=hob_in_tob.pos, time=hob_in_tob.time)
 tob_frame.add_path('home', 'hob')
-cob_in_tob = hob_frame['cob'].transform_length(v_hob_in_tob)
+cob_in_tob = hob_frame['cob'].translate_full('pos', v_hob_in_tob)
 tob_frame.add_point('cob', vel=cob_in_tob.vel, pos=cob_in_tob.pos, time=cob_in_tob.time)
 
 ## Calculate points in journey
@@ -143,7 +143,7 @@ v_hob_in_hib_trav = -v_hib_in_hob_trav
 # Calculate pos and time of traveller's turnaround point; pos is relative to traveller at the beginning of its journey
 v_hob_in_tob = -hob_frame['tob'].vel
 s_hob_in_hob = np.array([s_hob_in_hob_x,0,0], dtype=np.float32)
-t_obj_in_tob = t_translate(t_diff_ib_ob_in_hob, v_hob_in_tob, s_hob_in_hob)
+t_obj_in_tob = t_transform_down(t_diff_ib_ob_in_hob, v_hob_in_tob, s_hob_in_hob)
 #t_obj_in_tob = (s_tap_in_tob[0] - s_sep_in_tob[0]) / -v_hob_in_tob[0]
 
 # Set out-bound traveller in its own frame
@@ -152,14 +152,14 @@ tob_frame = Frame('tob')
 # In-Bound Journey
 
 s_cob_in_hob = np.array([s_cob_in_hob_x,0,0], dtype=np.float32)
-s_tap_in_tob = s_translate(s_cob_in_hob, v_hob_in_tob, s_hob_in_hob)
-s_tap_in_tib_trav = s_translate(s_tap_in_tob, v_tob_in_tib_trav, tob_frame['tob'].time) # TODO: in tib, tap is 0 and sep is negative
+s_tap_in_tob = s_transform_down(s_cob_in_hob, v_hob_in_tob, s_hob_in_hob)
+s_tap_in_tib_trav = s_transform_down(s_tap_in_tob, v_tob_in_tib_trav, tob_frame['tob'].time) # TODO: in tib, tap is 0 and sep is negative
 s_sep_in_tob = s_hob_in_hob # TODO: use v_tob_in_hob
-s_sep_in_tib_trav = s_translate(s_sep_in_tob, v_tob_in_tib_trav, tob_frame['tob'].time)
+s_sep_in_tib_trav = s_transform_down(s_sep_in_tob, v_tob_in_tib_trav, tob_frame['tob'].time)
 t_ibj_in_tib_trav = (s_sep_in_tib_trav[0] - s_tap_in_tib_trav[0]) / v_tib_in_hib_x
 
 # Set in-bound traveller in its own frame
-t_tib_in_tib_trav = t_translate(t_obj_in_tob, v_tob_in_tib_trav, tob_frame['tob'].pos)
+t_tib_in_tib_trav = t_transform_down(t_obj_in_tob, v_tob_in_tib_trav, tob_frame['tob'].pos)
 tib_frame_trav = Frame('tib', time=t_tib_in_tib_trav)
 
 # Trajectories
@@ -171,8 +171,8 @@ t_steps_ob_in_trav = t_steps_ob_in_tob
 t_steps_ib_in_trav = t_steps_ib_in_tib_trav
 
 # Calculate out-bound journey of home in traveller frame
-s_hob_in_tob = s_translate(hob_frame['hob'].pos, v_hob_in_tob, hob_frame['hob'].time)
-t_hob_in_tob = t_translate(hob_frame['hob'].time, v_hob_in_tob, hob_frame['hob'].pos)
+s_hob_in_tob = s_transform_down(hob_frame['hob'].pos, v_hob_in_tob, hob_frame['hob'].time)
+t_hob_in_tob = t_transform_down(hob_frame['hob'].time, v_hob_in_tob, hob_frame['hob'].pos)
 #tob_frame['hob'] = Point(v_hob_in_tob, s_hob_in_tob, t_hob_in_tob)
 tob_frame['hob'] = hob_frame['hob'].transform(v_hob_in_tob)
 #tob_frame['hob'] = hob_frame['hob'].transform(v_hob_in_tob)
@@ -261,7 +261,7 @@ path_home_in_tib = Path.create_path(s_sep_in_tib, t_hob_in_tib, [t_fj_in_tib], [
 # See above explanations for why dilation and contraction are both used here
 # TODO: probably figure out some function or interface that more intuitively and easily/readily calculates s or t without having to do all this thought and explanation
 #t_obj_in_tib = transform_time(t_obj_in_tob, v_tob_in_tib, s_zero)
-t_ibj_in_tib = t_translate(t_diff_ep_ib_in_hob_i, v_hib_in_tib, s_zero)
+t_ibj_in_tib = t_transform_down(t_diff_ep_ib_in_hob_i, v_hib_in_tib, s_zero)
 t_tob_in_tib = 0
 path_trav_in_tib = Path.create_path(s_sep_in_tib, t_tob_in_tib, [t_obj_in_tib, t_ibj_in_tib], [v_tob_in_tib, v_zero])
 

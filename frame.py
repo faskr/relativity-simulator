@@ -29,20 +29,35 @@ class Point:
             t_transform(self.time, v_old_in_new, self.pos)
         )
     
-    def transform_length(self, v_old_in_new):
-        v_old_in_rest = -self.vel
-        p_in_rest = Point(
-            0,
-            s_transform(self.pos, v_old_in_rest, self.time),
-            self.time
+    def translate_one_way(self, dim_type, direction, v_old_in_new):
+        # Translate up: dilation formula with phase, from motion to rest (*will* end up at rest)
+        # Translate down: contraction formula with phase, from rest to motion (*must* be from rest frame)
+        if direction == 'down':
+            assert self.vel.all() == 0
+        v_new = vector(0, 0, 0) if direction == 'up' else v_old_in_new if direction == 'down' else None
+        if dim_type == 'pos':
+            s_transform_fn = s_transform if direction == 'up' else s_transform_down if direction == 'down' else None
+            t_transform_fn = lambda t, v, s: t
+        elif dim_type == 'time':
+            s_transform_fn = lambda s, v, t: s
+            t_transform_fn = t_transform if direction == 'up' else t_transform_down if direction == 'down' else None
+        return Point(
+            v_new,
+            s_transform_fn(self.pos, v_old_in_new, self.time),
+            t_transform_fn(self.time, v_old_in_new, self.pos)
         )
+
+    # Calculates *one* of the following:
+    # s_new = (s_rest - v_down*t_rest) / gamma_down = ([s_old*gamma_up - v_up*t_old*gamma_up] - v_down*t_old) / gamma_down
+    # t_new = (t_rest - v_down*s_rest/c^2) / gamma_down = ([t_old*gamma_up - v_up*s_old*gamma_up/c^2] - v_down*s_old/c^2) / gamma_down
+    def translate_full(self, dim_type, v_old_in_new):
+        # Translate up to rest frame
+        v_old_in_rest = -self.vel
+        p_in_rest = self.translate_one_way(dim_type, 'up', v_old_in_rest)
+        # Translate down to new frame
         v_rest_in_old = self.vel
         v_rest_in_new = v_transform(v_rest_in_old, v_old_in_new)
-        return Point(
-            v_transform(p_in_rest.vel, v_rest_in_new),
-            s_translate(p_in_rest.pos, v_rest_in_new, p_in_rest.time),
-            p_in_rest.time
-        )
+        return p_in_rest.translate_one_way(dim_type, 'down', v_rest_in_new)
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
     def trajectory(self, t_steps):

@@ -60,11 +60,17 @@ def t_transform(t_p_in_a, v_a_in_b, s_p_in_a):
 #   Length contraction: A observes a difference of positions between two points that are measured in B and simultaneous in B, but observes a smaller difference measured in A
 
 # Transform object (as opposed to event): where is the object at the same point in time in the new frame (different point in time in the old)?
-def s_translate(s_p_in_a, v_a_in_b, t_p_in_a):
+
+# Calculates a rest trajectory in the foreign frame that the trajectory in the native frame of an object moving in that frame (& at rest in native) intersects at the given time, given a source position in the native rest frame
+# Useful for some operations such as space translation, i.e. what other points lie on the trajectory of the object at this point?
+def s_transform_down(s_p_in_a, v_a_in_b, t_p_in_a):
     return contract(s_p_in_a + s_phase(v_a_in_b, t_p_in_a), v_a_in_b)
 
 # Transform current frame A to foreign frame B
 
 # Transform object (as opposed to event): when is the object at the same point in space in the new frame (different point in space in the old)?
-def t_translate(t_p_in_a, v_a_in_b, s_p_in_a):
+
+# Calculates a line of simultaneity in the foreign frame that the simultaneity line in the native frame of an object moving in that frame (& at rest in native) intersects at the given position, given its time in the native rest frame
+# Useful for some operations such as time translation, i.e. what other points are simultaneous with the object at this point?
+def t_transform_down(t_p_in_a, v_a_in_b, s_p_in_a):
     return contract(t_p_in_a + t_phase(v_a_in_b, s_p_in_a), mag(v_a_in_b))
