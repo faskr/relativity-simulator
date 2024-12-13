@@ -20,16 +20,25 @@ class Point:
         self.pos = np.array(pos, dtype=np.float32)
         self.time = time
     
-    # Calculate the velocity, position, and time of a point in a new frame, from known values in another frame
-    # This function assumes that the origins of both frames are the same event, which isn't always the case
-    def transform(self, v_old_in_new):
+    # Calculate point when origin of old is offset to coincide with origin of new frame
+    def offset(self, new_in_old):
         return Point(
-            v_transform(self.vel, v_old_in_new),
-            s_transform(self.pos, v_old_in_new, self.time),
-            t_transform(self.time, v_old_in_new, self.pos)
+            self.vel,
+            self.pos - new_in_old.pos, # old pos relative to new pos
+            self.time - new_in_old.time # old time relative to new time
         )
     
-    def translate_one_way(self, dim_type, direction, v_old_in_new):
+    # Calculate the velocity, position, and time of a point in a new frame, from known values in another frame
+    def transform(self, new_in_old):
+        p_in_offset_old = self.offset(new_in_old)
+        v_old_in_new = -new_in_old.vel
+        return Point(
+            v_transform(p_in_offset_old.vel, v_old_in_new),
+            s_transform(p_in_offset_old.pos, v_old_in_new, p_in_offset_old.time),
+            t_transform(p_in_offset_old.time, v_old_in_new, p_in_offset_old.pos)
+        )
+    
+    def translate_one_way(self, dim_type, direction, v_old_in_new, at_coord):
         # Translate up: dilation formula with phase, from motion to rest (*will* end up at rest)
         # Translate down: contraction formula with phase, from rest to motion (*must* be from rest frame)
         if direction == 'down':
@@ -37,27 +46,39 @@ class Point:
         v_new = vector(0, 0, 0) if direction == 'up' else v_old_in_new if direction == 'down' else None
         if dim_type == 'pos': # Intersection of new line of simultaneity with the same trajectory
             s_transform_fn = s_transform if direction == 'up' else s_transform_down if direction == 'down' else None
-            t_transform_fn = lambda t, v, s: t
+            s_new = s_transform_fn(self.pos, v_old_in_new, self.time)
+            t_new = at_coord
         elif dim_type == 'time': # Intersection of new trajectory with the same line of simultaneity
-            s_transform_fn = lambda s, v, t: s
+            s_new = at_coord
             t_transform_fn = t_transform if direction == 'up' else t_transform_down if direction == 'down' else None
-        return Point(
-            v_new,
-            s_transform_fn(self.pos, v_old_in_new, self.time),
-            t_transform_fn(self.time, v_old_in_new, self.pos)
-        )
+            t_new = t_transform_fn(self.time, v_old_in_new, self.pos)
+        return Point(v_new, s_new, t_new)
 
     # Calculates *one* of the following:
     # s_new = (s_rest - v_down*t_rest) / gamma_down = ([s_old*gamma_up - v_up*t_old*gamma_up] - v_down*t_old) / gamma_down
     # t_new = (t_rest - v_down*s_rest/c^2) / gamma_down = ([t_old*gamma_up - v_up*s_old*gamma_up/c^2] - v_down*s_old/c^2) / gamma_down
-    def translate_full(self, dim_type, v_old_in_new):
+    def translate_full(self, dim_type, new_in_rest, rest_in_old=None):
+        rest_in_old = self if rest_in_old == None else rest_in_old # By default, p is at the origin of rest, but this is not necessarily the case
+        p_offset_in_old = Point(
+            self.vel,
+            self.pos - rest_in_old.pos, # p in old - rest origin of p in old
+            self.time - rest_in_old.time # p in old - rest origin of p in old
+        )
+        print(p_offset_in_old.vel, p_offset_in_old.pos, p_offset_in_old.time)
         # Translate up to rest frame
-        v_old_in_rest = -self.vel
-        p_in_rest = self.translate_one_way(dim_type, 'up', v_old_in_rest)
+        v_old_in_rest = -rest_in_old.vel
+        p_in_rest = p_offset_in_old.translate_one_way(dim_type, 'up', v_old_in_rest, p_offset_in_old.time)
+        print(p_in_rest.vel, p_in_rest.pos, p_in_rest.time)
+        p_offset_in_rest = Point(
+            p_in_rest.vel,
+            p_in_rest.pos - new_in_rest.pos,
+            p_in_rest.time #- new_in_rest.time
+        )
+        print(p_offset_in_rest.vel, p_offset_in_rest.pos, p_offset_in_rest.time)
         # Translate down to new frame
-        v_rest_in_old = self.vel
-        v_rest_in_new = v_transform(v_rest_in_old, v_old_in_new)
-        return p_in_rest.translate_one_way(dim_type, 'down', v_rest_in_new)
+        v_rest_in_new = -new_in_rest.vel
+        p_in_new = p_offset_in_rest.translate_one_way(dim_type, 'down', v_rest_in_new, p_offset_in_rest.time)
+        return p_in_new
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
     def trajectory(self, t_steps):
@@ -73,14 +94,14 @@ class Point:
     def trajectory_in_interval(self, other, tick_step=0.1, v_axis=0):
         duration = other.time - self.time
         t_steps = np.arange(0, duration, dilate(tick_step, self.vel[v_axis]))
-        #pos = np.tile(self.pos, (t_steps.size, 1)) + matrix_from_vecs(t_steps, self.vel)
-        #time = self.time + t_steps
         return self.trajectory(t_steps)
 
     def convergence_time_with(self, other):
-        s_diff_self_other = self.pos - other.pos
-        v_diff_other_self = other.vel - self.vel
-        return proj(s_diff_self_other, v_diff_other_self) / mag(v_diff_other_self)
+        v_diff_self_other = self.vel - other.vel
+        s_diff_other_self = other.pos - self.pos
+        t_diff_other_self = other.time - self.time
+        s_diff_phase = t_diff_other_self * proj(other.vel, -v_diff_self_other)
+        return (proj(s_diff_other_self, v_diff_self_other) + s_diff_phase) / mag(v_diff_self_other)
 
 class Path:
     def __init__(self, start_pos, start_time):
@@ -128,13 +149,13 @@ class Path:
 
 # TODO: have a variable that stores paths, and a function that appends to the paths given new velocities
 class Frame():
-    def __init__(self, name, pos=[0,0,0], time=0):
+    def __init__(self, name):
         self.name = name
-        self.paths = {}
+        self.point = Point([0,0,0], [0,0,0], 0)
         self.points = {}
-        self.point = Point([0,0,0], pos, time)
+        self.points[name] = self.point
         self.path = Path(self.point.pos, self.point.time)
-        self[name] = self.point
+        self.paths = {}
     
     def __setitem__(self, point_name, point):
         self.points[point_name] = point
