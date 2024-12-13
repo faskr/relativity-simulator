@@ -233,6 +233,9 @@ hii_offset_by_tii_in_hob = Point(
 v_hob_in_tii = -hob_frame['tii'].vel
 hii_in_tii = hii_offset_by_tii_in_hob.transform(hob_frame['tii'])
 
+
+# TODO: maybe try testing s_transform_down() directly; I still don't think I fully understand it yet
+
 # Test translate_full
 tii_frame = Frame('tii')
 home_in_tii_test = hob_frame['hob'].translate_full('pos', hob_frame['tii'])
