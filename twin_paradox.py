@@ -262,18 +262,23 @@ trav_in_tob_test = hob_frame['tii'].translate_full('pos', hob_frame['tob'], hob_
 print(trav_in_tob_test.vel, trav_in_tob_test.pos, trav_in_tob_test.time) # should be 0, 0, 1
 
 
-
+print('UP')
 home_in_hob_test = hob_frame['hob'].translate_one_way('pos', 'up', -hob_frame['hob'].vel, hob_frame['hob'].time)
 print(home_in_hob_test.vel, home_in_hob_test.pos, home_in_hob_test.time) # should be 0, 0, 0
-home_in_hii_test = hob_frame['hii'].translate_one_way('pos', 'up', -hob_frame['hii'].vel, hob_frame['hob'].time)
-print(home_in_hii_test.vel, home_in_hii_test.pos, home_in_hii_test.time) # should be 0, 0, 0
-
-change_in_cob_test = hob_frame['cob'].translate_one_way('pos', 'up', -hob_frame['cob'].vel, hob_frame['hob'].time)
+home_in_hii_test = hob_frame['hii'].translate_one_way('pos', 'up', -hob_frame['hii'].vel, hob_frame['hii'].time)
+print(home_in_hii_test.vel, home_in_hii_test.pos, home_in_hii_test.time) # should be 0, 0, 1
+change_in_cob_test = hob_frame['cob'].translate_one_way('pos', 'up', -hob_frame['cob'].vel, hob_frame['cob'].time)
 print(change_in_cob_test.vel, change_in_cob_test.pos, change_in_cob_test.time) # should be 0, 50, 0
 hob_frame.inertial_step('cob', 'cii', t_diff_ib_ob_in_hob, v_hii_in_hob)
-change_in_cii_test = hob_frame['cii'].translate_one_way('pos', 'up', -hob_frame['cii'].vel, hob_frame['hob'].time)
-print(change_in_cii_test.vel, change_in_cii_test.pos, change_in_cii_test.time) # should be 0, 50, 0
-trav_in_tob_test = hob_frame['tob'].translate_one_way('pos', 'up', -hob_frame['tob'].vel, hob_frame['hob'].time)
+change_in_cii_test = hob_frame['cii'].translate_one_way('pos', 'up', -hob_frame['cii'].vel, hob_frame['cii'].time)
+print(change_in_cii_test.vel, change_in_cii_test.pos, change_in_cii_test.time) # should be 0, 50, 1
+trav_in_tob_test = hob_frame['tob'].translate_one_way('pos', 'up', -hob_frame['tob'].vel, hob_frame['tob'].time)
 print(trav_in_tob_test.vel, trav_in_tob_test.pos, trav_in_tob_test.time) # should be 0, 0, 0
-tii_in_tii_test = hob_frame['tii'].translate_one_way('pos', 'up', -hob_frame['tii'].vel, hob_frame['hob'].time)
-print(tii_in_tii_test.vel, tii_in_tii_test.pos, tii_in_tii_test.time) # should be 0, 115.47, 0 (without offset)
+trav_in_tii_test = hob_frame['tii'].translate_one_way('pos', 'up', -hob_frame['tii'].vel, hob_frame['tii'].time)
+print(trav_in_tii_test.vel, trav_in_tii_test.pos, trav_in_tii_test.time) # should be 0, 115.47, 1.1547 (without offset)
+
+# TODO: UP is all correct. DOWN remains to be tested.
+# Intuitive way to see translation: rotate axis of specified dimension into foreign frame, and shift that axis so that the point that intersected the non-specified native axis hits the non-specified foreign axis
+
+print('DOWN')
+#home_in_hob_test = home_in_hob_test.translate_one_way('pos', 'down', -hob_frame['tii'].vel, home_in_hob_test.time)
