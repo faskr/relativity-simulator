@@ -38,6 +38,14 @@ class Point:
             t_transform(p_in_offset_old.time, v_old_in_new, p_in_offset_old.pos)
         )
     
+    def transform_no_offset(self, new_in_old):
+        v_old_in_new = -new_in_old.vel
+        return Point(
+            v_transform(new_in_old.vel, v_old_in_new),
+            s_transform(new_in_old.pos, v_old_in_new, new_in_old.time),
+            t_transform(new_in_old.time, v_old_in_new, new_in_old.pos)
+        )
+    
     def translate_one_way(self, dim_type, direction, v_old_in_new, at_coord):
         # Translate up: dilation formula with phase, from motion to rest (*will* end up at rest)
         # Translate down: contraction formula with phase, from rest to motion (*must* be from rest frame)
@@ -47,9 +55,9 @@ class Point:
         if dim_type == 'pos': # Intersection of new line of simultaneity with the same trajectory
             s_transform_fn = s_transform if direction == 'up' else s_transform_down if direction == 'down' else None
             s_new = s_transform_fn(self.pos, v_old_in_new, self.time)
-            t_new = dilate(at_coord, mag(v_old_in_new)) if direction == 'up' else contract(at_coord, mag(v_old_in_new)) if direction == 'down' else None
+            t_new = at_coord
         elif dim_type == 'time': # Intersection of new trajectory with the same line of simultaneity
-            s_new = dilate(at_coord, v_old_in_new) if direction == 'up' else contract(at_coord, v_old_in_new) if direction == 'down' else None
+            s_new = at_coord
             t_transform_fn = t_transform if direction == 'up' else t_transform_down if direction == 'down' else None
             t_new = t_transform_fn(self.time, v_old_in_new, self.pos)
         return Point(v_new, s_new, t_new)
