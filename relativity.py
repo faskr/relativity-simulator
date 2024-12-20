@@ -18,6 +18,7 @@ def dilate(x, v):
 
 # Calculate offset in time due to location in space in direction of velocity
 # Over space in the direction of movement, is time going forward or backward?
+# TODO: Figure out why phase is not simply s / v
 def t_phase(v_a_in_b, s_in_a):
     s_in_a_mag = proj(s_in_a, v_a_in_b)
     v_a_in_b_mag = mag(v_a_in_b) # Velocity is always positive in its own direction
@@ -61,12 +62,22 @@ def t_transform(t_p_in_a, v_a_in_b, s_p_in_a):
 
 # Calculates a rest trajectory in the new frame that the trajectory in the old frame of an object moving in the new frame (& at rest in old) intersects at the given time, given a source position in the old rest frame
 # Useful for some operations such as space translation, i.e. what other points lie on the trajectory of the object at this point?
-def s_transform_down(s_p_in_a, v_a_in_b, t_p_in_b):
+# E.g. In translation, used to find where a trajectory intersects a certain time in a foreign frame
+def transform_trajectory_t_s(s_p_in_a, v_a_in_b, t_p_in_b):
     return contract(s_p_in_a, v_a_in_b) + s_phase(v_a_in_b, t_p_in_b)
+
+# E.g. In translation, used to find when a trajectory intersects a certain position in a foreign frame
+def transform_trajectory_s_t(s_p_in_a, v_a_in_b, s_p_in_b):
+    return t_phase(v_a_in_b, contract(s_p_in_a, v_a_in_b) - s_p_in_b)
 
 # Transform current frame A to foreign frame B
 
 # Calculates a line of simultaneity in the new frame that the simultaneity line in the old frame of an object moving in the new frame (& at rest in old) intersects at the given position, given its time in the old rest frame
 # Useful for some operations such as time translation, i.e. what other points are simultaneous with the object at this point?
-def t_transform_down(t_p_in_a, v_a_in_b, s_p_in_b):
+# E.g. In translation, used to find when a line of simultaneity intersects a certain position in a foreign frame
+def transform_simultaneity_s_t(t_p_in_a, v_a_in_b, s_p_in_b):
     return contract(t_p_in_a, mag(v_a_in_b)) + t_phase(v_a_in_b, s_p_in_b)
+
+# E.g. In translation, used to find where a line of simultaneity intersects a certain time in a foreign frame
+def transform_simultaneity_t_s(t_p_in_a, v_a_in_b, t_p_in_b):
+    return s_phase(v_a_in_b, contract(t_p_in_a, mag(v_a_in_b)) - t_p_in_b)

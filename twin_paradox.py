@@ -234,17 +234,15 @@ v_hob_in_tii = -hob_frame['tii'].vel
 hii_in_tii = hii_offset_by_tii_in_hob.transform(hob_frame['tii'])
 
 
-# TODO: rethink the expected outputs with offsets, edit translate_full, and then test
-
 # Test translate_full
 tii_frame = Frame('tii')
 home_in_tii_test = hob_frame['hob'].translate_full('pos', hob_frame['tii'])
 print(home_in_tii_test.vel, home_in_tii_test.pos, home_in_tii_test.time) # should be 50, -43.3, 0
 home_in_tii_test = hob_frame['hii'].translate_full('pos', tii_in_hii)
-print(home_in_tii_test.vel, home_in_tii_test.pos, home_in_tii_test.time) # should be 50, -43.3, 0
+print(home_in_tii_test.vel, home_in_tii_test.pos, home_in_tii_test.time) # should be 50, 6.7, 1
 
 home_in_tii_test = hob_frame['hii'].translate_full('pos', hob_frame['tii'], hob_frame['hob'])
-print(home_in_tii_test.vel, home_in_tii_test.pos, home_in_tii_test.time) # should be 50, -43.3, 0
+print(home_in_tii_test.vel, home_in_tii_test.pos, home_in_tii_test.time) # should be 50, 6.7, 1
 
 change_in_tii_test = hob_frame['cob'].translate_full('pos', hob_frame['tii'])
 print(change_in_tii_test.vel, change_in_tii_test.pos, change_in_tii_test.time) # should be 50, -43.3, 0
@@ -252,15 +250,23 @@ change_in_tii_test = hob_frame['cob'].translate_full('pos', hob_frame['tii'], ho
 print(change_in_tii_test.vel, change_in_tii_test.pos, change_in_tii_test.time) # should be 50, 0, 0
 hob_frame.inertial_step('cob', 'cii', t_diff_ib_ob_in_hob, v_hii_in_hob)
 change_in_tii_test = hob_frame['cii'].translate_full('pos', tii_in_hii, hob_frame['hii'])
-print(change_in_tii_test.vel, change_in_tii_test.pos, change_in_tii_test.time) # should be 50, 0, 0
-trav_in_tii_test = hob_frame['tob'].translate_full('pos', tob_frame['tii'])
-print(trav_in_tii_test.vel, trav_in_tii_test.pos, trav_in_tii_test.time) # should be 80, 0, 0
-trav_in_tii_test = hob_frame['tii'].translate_full('pos', tii_frame['tii'])
-print(trav_in_tii_test.vel, trav_in_tii_test.pos, trav_in_tii_test.time) # should be 0, 0, 0
+print(change_in_tii_test.vel, change_in_tii_test.pos, change_in_tii_test.time) # should be 50, 50, 1
+travob_in_tii_test = hob_frame['tob'].translate_full('pos', tob_frame['tii'])
+print(travob_in_tii_test.vel, travob_in_tii_test.pos, travob_in_tii_test.time) # should be 80, 0, 0
+travib_in_tii_test = hob_frame['tii'].translate_full('pos', tii_frame['tii'])
+print(travib_in_tii_test.vel, travib_in_tii_test.pos, travib_in_tii_test.time) # should be 0, 0, 1
 
-trav_in_tob_test = hob_frame['tii'].translate_full('pos', hob_frame['tob'], hob_frame['hob'])
-print(trav_in_tob_test.vel, trav_in_tob_test.pos, trav_in_tob_test.time) # should be 0, 0, 1
+v_tob_in_tii = -v_tii_in_tob
+tii_frame.inertial_step_back('tii', 'tob', -t_diff_ib_ob_in_tii, v_tob_in_tii)
+travib_in_tob_test = hob_frame['tii'].translate_full('pos', tii_frame['tob'])
+print(travib_in_tob_test.vel, travib_in_tob_test.pos, travib_in_tob_test.time) # should be -80, -10.7, 1
 
+tii_frame.add_point('hob', [50,0,0], tii_frame['tob'].pos, tii_frame['tob'].time)
+change_in_tob_test = cob_in_tii.translate_full('pos', hob_frame['tob'], tii_frame['hob'])
+print(change_in_tob_test.vel, change_in_tob_test.pos, change_in_tob_test.time) # should be -50, 101 (=43.3+57.7), -1.15
+
+travib_in_cob_test = tii_in_hii.translate_full('pos', cob_in_tii)
+print(travib_in_cob_test.vel, travib_in_cob_test.pos, travib_in_cob_test.time) # should be -50, 50, 0
 
 print('UP')
 home_in_hob_test = hob_frame['hob'].translate_one_way('pos', 'up', -hob_frame['hob'].vel, hob_frame['hob'].time)

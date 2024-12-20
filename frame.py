@@ -51,15 +51,20 @@ class Point:
         # Translate down: contraction formula with phase, from rest to motion (*must* be from rest frame)
         if direction == 'down':
             assert self.vel.all() == 0
+        #p_offset_in_old = self.offset(new_in_old)
         v_new = vector(0, 0, 0) if direction == 'up' else v_old_in_new if direction == 'down' else None
         if dim_type == 'pos': # Intersection of new line of simultaneity with the same trajectory
-            s_transform_fn = s_transform if direction == 'up' else s_transform_down if direction == 'down' else None
-            s_new = s_transform_fn(self.pos, v_old_in_new, self.time)
+            if direction == 'up':
+                s_new = s_transform(self.pos, v_old_in_new, self.time)
+            elif direction == 'down':
+                s_new = transform_trajectory_t_s(self.pos, v_old_in_new, at_coord)
             t_new = at_coord
         elif dim_type == 'time': # Intersection of new trajectory with the same line of simultaneity
             s_new = at_coord
-            t_transform_fn = t_transform if direction == 'up' else t_transform_down if direction == 'down' else None
-            t_new = t_transform_fn(self.time, v_old_in_new, self.pos)
+            if direction == 'up':
+                t_new = t_transform(self.time, v_old_in_new, self.pos)
+            elif direction == 'down':
+                t_new = transform_simultaneity_s_t(self.time, v_old_in_new, at_coord)
         return Point(v_new, s_new, t_new)
 
     # Calculates *one* of the following:
@@ -67,25 +72,17 @@ class Point:
     # t_new = (t_rest - v_down*s_rest/c^2) / gamma_down = ([t_old*gamma_up - v_up*s_old*gamma_up/c^2] - v_down*s_old/c^2) / gamma_down
     def translate_full(self, dim_type, new_in_rest, rest_in_old=None):
         rest_in_old = self if rest_in_old == None else rest_in_old # By default, p is at the origin of rest, but this is not necessarily the case
-        p_offset_in_old = Point(
-            self.vel,
-            self.pos - rest_in_old.pos, # p in old - rest origin of p in old
-            self.time - rest_in_old.time # p in old - rest origin of p in old
-        )
-        print(p_offset_in_old.vel, p_offset_in_old.pos, p_offset_in_old.time)
+        p_offset_in_old = self.offset(rest_in_old)
+        #print(p_offset_in_old.vel, p_offset_in_old.pos, p_offset_in_old.time)
         # Translate up to rest frame
         v_old_in_rest = -rest_in_old.vel
-        p_in_rest = p_offset_in_old.translate_one_way(dim_type, 'up', v_old_in_rest, p_offset_in_old.time)
-        print(p_in_rest.vel, p_in_rest.pos, p_in_rest.time)
-        p_offset_in_rest = Point(
-            p_in_rest.vel,
-            p_in_rest.pos - new_in_rest.pos,
-            p_in_rest.time #- new_in_rest.time
-        )
-        print(p_offset_in_rest.vel, p_offset_in_rest.pos, p_offset_in_rest.time)
+        p_in_rest = p_offset_in_old.translate_one_way(dim_type, 'up', v_old_in_rest, self.time)
+        #print(p_in_rest.vel, p_in_rest.pos, p_in_rest.time)
+        p_offset_in_rest = p_in_rest.offset(new_in_rest)
+        #print(p_offset_in_rest.vel, p_offset_in_rest.pos, p_offset_in_rest.time)
         # Translate down to new frame
         v_rest_in_new = -new_in_rest.vel
-        p_in_new = p_offset_in_rest.translate_one_way(dim_type, 'down', v_rest_in_new, p_offset_in_rest.time)
+        p_in_new = p_offset_in_rest.translate_one_way(dim_type, 'down', v_rest_in_new, self.time)
         return p_in_new
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
@@ -188,5 +185,10 @@ class Frame():
     
     def inertial_step(self, old_name, new_name, t_diff, v_new):
         s_new = self[old_name].pos + self[old_name].vel * t_diff
+        t_new = self[old_name].time + t_diff
+        self[new_name] = Point(vel=v_new, pos=s_new, time=t_new)
+
+    def inertial_step_back(self, old_name, new_name, t_diff, v_new):
+        s_new = self[old_name].pos + v_new * t_diff
         t_new = self[old_name].time + t_diff
         self[new_name] = Point(vel=v_new, pos=s_new, time=t_new)
