@@ -282,36 +282,13 @@ cob_in_tii_test = change_in_tob_test.translate_full('pos', hob_frame['tii'], tob
 print(cob_in_tii_test.vel, cob_in_tii_test.pos, cob_in_tii_test.time) # 50, -57.7, -1.15
 
 
-print('UP')
-#home_in_hob_test = hob_frame['hob'].translate_one_way('pos', 'up', -hob_frame['hob'].vel, hob_frame['hob'].time)
-#print(home_in_hob_test.vel, home_in_hob_test.pos, home_in_hob_test.time) # should be 0, 0, 0
-#home_in_hii_test = hob_frame['hii'].translate_one_way('pos', 'up', -hob_frame['hii'].vel, hob_frame['hii'].time)
-#print(home_in_hii_test.vel, home_in_hii_test.pos, home_in_hii_test.time) # should be 0, 0, 1
-#change_in_cob_test = hob_frame['cob'].translate_one_way('pos', 'up', -hob_frame['cob'].vel, hob_frame['cob'].time)
-#print(change_in_cob_test.vel, change_in_cob_test.pos, change_in_cob_test.time) # should be 0, 50, 0
-#hob_frame.inertial_step('cob', 'cii', t_diff_ib_ob_in_hob, v_hii_in_hob)
-#change_in_cii_test = hob_frame['cii'].translate_one_way('pos', 'up', -hob_frame['cii'].vel, hob_frame['cii'].time)
-#print(change_in_cii_test.vel, change_in_cii_test.pos, change_in_cii_test.time) # should be 0, 50, 1
-#travob_in_tob_test = hob_frame['tob'].translate_one_way('pos', 'up', -hob_frame['tob'].vel, hob_frame['tob'].time)
-#print(travob_in_tob_test.vel, travob_in_tob_test.pos, travob_in_tob_test.time) # should be 0, 0, 0
-#travib_in_tii_test = hob_frame['tii'].translate_one_way('pos', 'up', -hob_frame['tii'].vel, hob_frame['tii'].time)
-#print(travib_in_tii_test.vel, travib_in_tii_test.pos, travib_in_tii_test.time) # should be 0, 115.47, 1 (without offset)
-
-# TODO: put this somewhere and edit it, or figure out what to do with it
-# Intuitive way to see down translation: rotate axis of specified dimension, around intersection at foreign frame axis, into foreign frame, and shift that axis so that the point at the specified amount away hits the non-specified foreign axis
-# Intuitive purpose: find where a trajectory intersects a certain time in a foreign frame, or when the simultaneity intersects a certain position
-
-print('DOWN')
-#home_in_tii_test = home_in_hob_test.translate_one_way('pos', 'down', -hob_frame['tii'].vel, home_in_hob_test.time)
-#print(home_in_tii_test.vel, home_in_tii_test.pos, home_in_tii_test.time) # should be 50, 0, 0
-#home_in_tii_test = home_in_hii_test.translate_one_way('pos', 'down', -hob_frame['tii'].vel, home_in_hii_test.time)
-#print(home_in_tii_test.vel, home_in_tii_test.pos, home_in_tii_test.time) # should be 50, 50, 1
-#change_in_tii_test = change_in_cob_test.translate_one_way('pos', 'down', -hob_frame['tii'].vel, change_in_cob_test.time)
-#print(change_in_tii_test.vel, change_in_tii_test.pos, change_in_tii_test.time) # should be 50, 43.3, 0
-#change_in_tii_test = change_in_cii_test.translate_one_way('pos', 'down', -hob_frame['tii'].vel, change_in_cii_test.time)
-#print(change_in_tii_test.vel, change_in_tii_test.pos, change_in_tii_test.time) # should be 50, 93.3, 1
-#travob_in_tii_test = travob_in_tob_test.translate_one_way('pos', 'down', -tob_frame['tii'].vel, travob_in_tob_test.time)
-#print(travob_in_tii_test.vel, travob_in_tii_test.pos, travob_in_tii_test.time) # should be 80, 0, 0
-#v_tii_in_tii = vector(0,0,0)
-#travib_in_tii_test = travib_in_tii_test.translate_one_way('pos', 'down', v_tii_in_tii, travib_in_tii_test.time)
-#print(travib_in_tii_test.vel, travib_in_tii_test.pos, travib_in_tii_test.time) # should be 0, 115.47, 1 (without offset)
+home_in_tii_test1 = hob_frame['hob'].translate_full('time', hob_frame['tii'])
+print(home_in_tii_test1.vel, home_in_tii_test1.pos, home_in_tii_test1.time)
+home_in_tii_test2 = hob_frame['hii'].translate_full('time', tii_in_hii)
+print(home_in_tii_test2.vel, home_in_tii_test2.pos, home_in_tii_test2.time)
+change_in_tii_test2 = hob_frame['cob'].translate_full('time', hob_frame['tii'], hob_frame['hob'])
+print(change_in_tii_test2.vel, change_in_tii_test2.pos, change_in_tii_test2.time)
+change_in_tii_test3 = hob_frame['cii'].translate_full('time', tii_in_hii, hob_frame['hii'])
+print(change_in_tii_test3.vel, change_in_tii_test3.pos, change_in_tii_test3.time)
+change_in_tob_test = cob_in_tii.translate_full('time', hob_frame['tob'], tii_frame['hob'])
+print(change_in_tob_test.vel, change_in_tob_test.pos, change_in_tob_test.time)

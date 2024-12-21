@@ -46,11 +46,13 @@ class Point:
             t_transform(new_in_old.time, v_old_in_new, new_in_old.pos)
         )
     
+    # Intuitive way to see down translation: rotate axis of specified dimension, around intersection at foreign frame axis, into foreign frame, and shift that axis so that the point at the specified amount away hits the non-specified foreign axis
+    # Intuitive purpose: find where a trajectory intersects a certain time in a foreign frame, or when the simultaneity intersects a certain position
     def translate_one_way(self, dim_type, direction, new_in_old, at_coord):
         # Translate up: dilation formula with phase, from motion to rest (*will* end up at rest)
         # Translate down: contraction formula with phase, from rest to motion (*must* be from rest frame)
         if direction == 'down':
-            assert self.vel.all() == 0
+            assert not self.vel.any()
         p_offset_in_old = self.offset(new_in_old)
         v_old_in_new = -new_in_old.vel
         v_new = vector(0, 0, 0) if direction == 'up' else v_old_in_new if direction == 'down' else None
@@ -59,6 +61,9 @@ class Point:
                 s_new = s_transform(p_offset_in_old.pos, v_old_in_new, p_offset_in_old.time)
             elif direction == 'down':
                 s_new = transform_trajectory_t_s(p_offset_in_old.pos, v_old_in_new, at_coord)
+                print('time1', at_coord)
+                at_coord2 = transform_trajectory_s_t(p_offset_in_old.pos, -v_old_in_new, s_new)
+                print('time2', at_coord2)
             t_new = at_coord
         elif dim_type == 'time': # Intersection of new trajectory with the same line of simultaneity
             s_new = at_coord
@@ -66,18 +71,22 @@ class Point:
                 t_new = t_transform(p_offset_in_old.time, v_old_in_new, p_offset_in_old.pos)
             elif direction == 'down':
                 t_new = transform_simultaneity_s_t(p_offset_in_old.time, v_old_in_new, at_coord)
+                print('pos1', at_coord)
+                at_coord2 = transform_simultaneity_t_s(p_offset_in_old.time, -v_old_in_new, t_new)
+                print('pos2', at_coord2)
         return Point(v_new, s_new, t_new)
 
     # Calculates *one* of the following:
     # s_new = (s_rest - v_down*t_rest) / gamma_down = ([s_old*gamma_up - v_up*t_old*gamma_up] - v_down*t_old) / gamma_down
     # t_new = (t_rest - v_down*s_rest/c^2) / gamma_down = ([t_old*gamma_up - v_up*s_old*gamma_up/c^2] - v_down*s_old/c^2) / gamma_down
     def translate_full(self, dim_type, new_in_rest, rest_in_old=None):
+        at_coord = self.time if dim_type == 'pos' else self.pos if dim_type == 'time' else None
         # Translate up to rest frame
         rest_in_old = self if rest_in_old == None else rest_in_old # By default, p is at the origin of rest, but this is not necessarily the case
-        p_in_rest = self.translate_one_way(dim_type, 'up', rest_in_old, self.time)
+        p_in_rest = self.translate_one_way(dim_type, 'up', rest_in_old, at_coord)
         #print(p_in_rest.vel, p_in_rest.pos, p_in_rest.time)
         # Translate down to new frame
-        return p_in_rest.translate_one_way(dim_type, 'down', new_in_rest, self.time)
+        return p_in_rest.translate_one_way(dim_type, 'down', new_in_rest, at_coord)
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
     def trajectory(self, t_steps):
