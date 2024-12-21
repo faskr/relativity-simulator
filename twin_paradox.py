@@ -282,6 +282,7 @@ cob_in_tii_test = change_in_tob_test.translate_full('pos', hob_frame['tii'], tob
 print(cob_in_tii_test.vel, cob_in_tii_test.pos, cob_in_tii_test.time) # 50, -57.7, -1.15
 
 
+# TODO: Figure out the expected values and just make sure these are correct. Then commit and then delete this whole testing section.
 home_in_tii_test1 = hob_frame['hob'].translate_full('time', hob_frame['tii'])
 print(home_in_tii_test1.vel, home_in_tii_test1.pos, home_in_tii_test1.time)
 home_in_tii_test2 = hob_frame['hii'].translate_full('time', tii_in_hii)
