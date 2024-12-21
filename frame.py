@@ -61,9 +61,6 @@ class Point:
                 s_new = s_transform(p_offset_in_old.pos, v_old_in_new, p_offset_in_old.time)
             elif direction == 'down':
                 s_new = transform_trajectory_t_s(p_offset_in_old.pos, v_old_in_new, at_coord)
-                print('time1', at_coord)
-                at_coord2 = transform_trajectory_s_t(p_offset_in_old.pos, -v_old_in_new, s_new)
-                print('time2', at_coord2)
             t_new = at_coord
         elif dim_type == 'time': # Intersection of new trajectory with the same line of simultaneity
             s_new = at_coord
@@ -71,9 +68,6 @@ class Point:
                 t_new = t_transform(p_offset_in_old.time, v_old_in_new, p_offset_in_old.pos)
             elif direction == 'down':
                 t_new = transform_simultaneity_s_t(p_offset_in_old.time, v_old_in_new, at_coord)
-                print('pos1', at_coord)
-                at_coord2 = transform_simultaneity_t_s(p_offset_in_old.time, -v_old_in_new, t_new)
-                print('pos2', at_coord2)
         return Point(v_new, s_new, t_new)
 
     # Calculates *one* of the following:
@@ -84,7 +78,6 @@ class Point:
         # Translate up to rest frame
         rest_in_old = self if rest_in_old == None else rest_in_old # By default, p is at the origin of rest, but this is not necessarily the case
         p_in_rest = self.translate_one_way(dim_type, 'up', rest_in_old, at_coord)
-        #print(p_in_rest.vel, p_in_rest.pos, p_in_rest.time)
         # Translate down to new frame
         return p_in_rest.translate_one_way(dim_type, 'down', new_in_rest, at_coord)
 
