@@ -46,44 +46,38 @@ class Point:
             t_transform(new_in_old.time, v_old_in_new, new_in_old.pos)
         )
     
-    def translate_one_way(self, dim_type, direction, v_old_in_new, at_coord):
+    def translate_one_way(self, dim_type, direction, new_in_old, at_coord):
         # Translate up: dilation formula with phase, from motion to rest (*will* end up at rest)
         # Translate down: contraction formula with phase, from rest to motion (*must* be from rest frame)
         if direction == 'down':
             assert self.vel.all() == 0
-        #p_offset_in_old = self.offset(new_in_old)
+        p_offset_in_old = self.offset(new_in_old)
+        v_old_in_new = -new_in_old.vel
         v_new = vector(0, 0, 0) if direction == 'up' else v_old_in_new if direction == 'down' else None
         if dim_type == 'pos': # Intersection of new line of simultaneity with the same trajectory
             if direction == 'up':
-                s_new = s_transform(self.pos, v_old_in_new, self.time)
+                s_new = s_transform(p_offset_in_old.pos, v_old_in_new, p_offset_in_old.time)
             elif direction == 'down':
-                s_new = transform_trajectory_t_s(self.pos, v_old_in_new, at_coord)
+                s_new = transform_trajectory_t_s(p_offset_in_old.pos, v_old_in_new, at_coord)
             t_new = at_coord
         elif dim_type == 'time': # Intersection of new trajectory with the same line of simultaneity
             s_new = at_coord
             if direction == 'up':
-                t_new = t_transform(self.time, v_old_in_new, self.pos)
+                t_new = t_transform(p_offset_in_old.time, v_old_in_new, p_offset_in_old.pos)
             elif direction == 'down':
-                t_new = transform_simultaneity_s_t(self.time, v_old_in_new, at_coord)
+                t_new = transform_simultaneity_s_t(p_offset_in_old.time, v_old_in_new, at_coord)
         return Point(v_new, s_new, t_new)
 
     # Calculates *one* of the following:
     # s_new = (s_rest - v_down*t_rest) / gamma_down = ([s_old*gamma_up - v_up*t_old*gamma_up] - v_down*t_old) / gamma_down
     # t_new = (t_rest - v_down*s_rest/c^2) / gamma_down = ([t_old*gamma_up - v_up*s_old*gamma_up/c^2] - v_down*s_old/c^2) / gamma_down
     def translate_full(self, dim_type, new_in_rest, rest_in_old=None):
-        rest_in_old = self if rest_in_old == None else rest_in_old # By default, p is at the origin of rest, but this is not necessarily the case
-        p_offset_in_old = self.offset(rest_in_old)
-        #print(p_offset_in_old.vel, p_offset_in_old.pos, p_offset_in_old.time)
         # Translate up to rest frame
-        v_old_in_rest = -rest_in_old.vel
-        p_in_rest = p_offset_in_old.translate_one_way(dim_type, 'up', v_old_in_rest, self.time)
+        rest_in_old = self if rest_in_old == None else rest_in_old # By default, p is at the origin of rest, but this is not necessarily the case
+        p_in_rest = self.translate_one_way(dim_type, 'up', rest_in_old, self.time)
         #print(p_in_rest.vel, p_in_rest.pos, p_in_rest.time)
-        p_offset_in_rest = p_in_rest.offset(new_in_rest)
-        #print(p_offset_in_rest.vel, p_offset_in_rest.pos, p_offset_in_rest.time)
         # Translate down to new frame
-        v_rest_in_new = -new_in_rest.vel
-        p_in_new = p_offset_in_rest.translate_one_way(dim_type, 'down', v_rest_in_new, self.time)
-        return p_in_new
+        return p_in_rest.translate_one_way(dim_type, 'down', new_in_rest, self.time)
 
     # Compute trajectory of a point/frame in another frame over time given its velocity and initial values in that frame
     def trajectory(self, t_steps):
