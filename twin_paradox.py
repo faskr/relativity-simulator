@@ -82,8 +82,6 @@ hob_frame.paths['home_inertial'].add_point(hob_frame['hei'].pos, hob_frame['hei'
 hob_frame.paths['traveller_inertial'].add_point(hob_frame['tei'].pos, hob_frame['tei'].time)
 
 
-# TODO: It would be nice to have a function that takes all paths in a given frame and transforms them to another frame, so that most of this code below wouldn't be necessary, and inertial steps only need to be done in one frame
-
 ### Traveller Plot
 
 ## Initialize frame
@@ -121,72 +119,13 @@ tob_frame.paths['home_accelerating'].add_point(tob_frame['hea'].pos, tob_frame['
 
 ### Out-Bound Traveller Plot
 
-## Initialize paths
-tob_frame.add_path('traveller_inertial', 'tob')
-tob_frame.add_path('home_inertial', 'hob')
-
-## Calculate points in journey
-
-# Out-bound: start to changepoint
-v_tii_in_tob = v_transform(v_tii_in_hob, v_hob_in_tob)
-tob_frame.inertial_step('tob', 'tii', t_diff_ib_ob_in_tob, v_tii_in_tob)
-tob_frame.paths['traveller_inertial'].add_segment(tob_frame['tob'], tob_frame['tii'])
-v_hii_in_tob = v_transform(v_hii_in_hob, v_hob_in_tob)
-tob_frame.inertial_step('hob', 'hii', t_diff_ib_ob_in_tob, v_hii_in_tob)
-tob_frame.paths['home_inertial'].add_segment(tob_frame['hob'], tob_frame['hii'])
-
-# In-bound: changepoint to end
-t_diff_ei_ib_in_tob = tob_frame['tii'].convergence_time_with(tob_frame['hii'])
-v_tei_in_tob = v_transform(v_tei_in_hob, v_hob_in_tob)
-tob_frame.inertial_step('tii', 'tei', t_diff_ei_ib_in_tob, v_tei_in_tob)
-tob_frame.paths['traveller_inertial'].add_segment(tob_frame['tii'], tob_frame['tei'])
-v_hei_in_tob = v_transform(v_hei_in_hob, v_hob_in_tob)
-tob_frame.inertial_step('hii', 'hei', t_diff_ei_ib_in_tob, v_hei_in_tob)
-tob_frame.paths['home_inertial'].add_segment(tob_frame['hii'], tob_frame['hei'])
-
-# Endpoint
-tob_frame.paths['traveller_inertial'].add_point(tob_frame['tei'].pos, tob_frame['tei'].time)
-tob_frame.paths['home_inertial'].add_point(tob_frame['hei'].pos, tob_frame['hei'].time)
-
+path_trav_inert_in_tob = hob_frame.paths['traveller_inertial'].transform_path(hob_frame['tob'])
+path_home_inert_in_tob = hob_frame.paths['home_inertial'].transform_path(hob_frame['tob'])
 
 ### In-Bound Traveller Plot
 
-## Initialize paths
-v_hob_in_tii = -hob_frame['tii'].vel
-#tii_in_tii = hob_frame['tii'].translate_full('pos', hob_frame['tii'])
-tii_frame = Frame('tii')#, pos=tii_in_tii.pos, time=tii_in_tii.time) # TODO: I don't think tii_in_tii.time is right?
-tob_in_tii = hob_frame['tob'].transform(hob_frame['tii'])
-tii_frame.add_point('tob', vel=tob_in_tii.vel, pos=tob_in_tii.pos, time=tob_in_tii.time)
-tii_frame.add_path('traveller_inertial', 'tob')
-hob_in_tii = hob_frame['hob'].transform(hob_frame['tii'])
-tii_frame.add_point('hob', vel=hob_in_tii.vel, pos=hob_in_tii.pos, time=hob_in_tii.time)
-tii_frame.add_path('home_inertial', 'hob')
-cob_in_tii = hob_frame['cob'].transform(hob_frame['tii'])
-tii_frame.add_point('cob', vel=cob_in_tii.vel, pos=cob_in_tii.pos, time=cob_in_tii.time)
-
-## Calculate points in journey
-
-# Out-bound: start to changepoint
-t_diff_ib_ob_in_tii = tii_frame['tob'].convergence_time_with(tii_frame['cob'])
-tii_frame.inertial_step('tob', 'tii', t_diff_ib_ob_in_tii, tii_frame['tii'].vel)
-tii_frame.paths['traveller_inertial'].add_segment(tii_frame['tob'], tii_frame['tii'])
-v_hii_in_tii = v_transform(v_hii_in_hob, v_hob_in_tii)
-tii_frame.inertial_step('hob', 'hii', t_diff_ib_ob_in_tii, v_hii_in_tii)
-tii_frame.paths['home_inertial'].add_segment(tii_frame['hob'], tii_frame['hii'])
-
-# In-bound: changepoint to end
-t_diff_ei_ib_in_tii = tii_frame['tii'].convergence_time_with(tii_frame['hii'])
-v_tei_in_tii = v_transform(v_tei_in_hob, v_hob_in_tii)
-tii_frame.inertial_step('tii', 'tei', t_diff_ei_ib_in_tii, v_tei_in_tii)
-tii_frame.paths['traveller_inertial'].add_segment(tii_frame['tii'], tii_frame['tei'])
-v_hei_in_tii = v_transform(v_hei_in_hob, v_hob_in_tii)
-tii_frame.inertial_step('hii', 'hei', t_diff_ei_ib_in_tii, v_hei_in_tii)
-tii_frame.paths['home_inertial'].add_segment(tii_frame['hii'], tii_frame['hei'])
-
-# Endpoint
-tii_frame.paths['traveller_inertial'].add_point(tii_frame['tei'].pos, tii_frame['tei'].time)
-tii_frame.paths['home_inertial'].add_point(tii_frame['hei'].pos, tii_frame['hei'].time)
-
+path_trav_inert_in_tii = hob_frame.paths['traveller_inertial'].transform_path(hob_frame['tii'])
+path_home_inert_in_tii = hob_frame.paths['home_inertial'].transform_path(hob_frame['tii'])
 
 # ==== Output ====
 
@@ -207,11 +146,11 @@ plot_paths(ax_journey, (tob_frame.paths['traveller_accelerating'], tob_frame.pat
 ax_journey = fig.add_subplot(2,2,3)
 ax_journey.set_title('Journey in Inertial Out-Bound Traveller Frame')
 #plot_spacetime(ax_journey, (path_home_in_tob, path_trav_in_tob), do_cones=False)
-plot_paths(ax_journey, (tob_frame.paths['traveller_inertial'], tob_frame.paths['home_inertial']))
+plot_paths(ax_journey, (path_trav_inert_in_tob, path_home_inert_in_tob))
 
 ax_journey = fig.add_subplot(2,2,4)
 ax_journey.set_title('Journey in Inertial In-Bound Traveller Frame')
-plot_paths(ax_journey, (tii_frame.paths['traveller_inertial'], tii_frame.paths['home_inertial'])) #(path_home_in_tib, path_trav_in_tib))
+plot_paths(ax_journey, (path_trav_inert_in_tii, path_home_inert_in_tii)) #(path_home_in_tib, path_trav_in_tib))
 
 # Plot settings
 plt.subplots_adjust(wspace=0, hspace=0.3)
@@ -224,6 +163,7 @@ plt.show()
 s_tii_in_hii = hob_frame['tii'].pos # TODO: assertion
 t_tii_in_hii = hob_frame['tii'].time - hob_frame['hii'].time # TODO: assertion
 tii_in_hii = Point(v_tii_in_hii, s_tii_in_hii, t_tii_in_hii)
+cob_in_tii = hob_frame['cob'].transform(hob_frame['tii'])
 #hii_in_tii = hob_frame['hii'].translate_full('pos', tii_in_hii)
 hii_offset_by_tii_in_hob = Point(
     hob_frame['hii'].vel,
@@ -252,11 +192,18 @@ print(change_in_tii_test2.vel, change_in_tii_test2.pos, change_in_tii_test2.time
 hob_frame.inertial_step('cob', 'cii', t_diff_ib_ob_in_hob, v_hii_in_hob)
 change_in_tii_test3 = hob_frame['cii'].translate_full('pos', tii_in_hii, hob_frame['hii'])
 print(change_in_tii_test3.vel, change_in_tii_test3.pos, change_in_tii_test3.time) # should be 50, 50, 1
-travob_in_tii_test = hob_frame['tob'].translate_full('pos', tob_frame['tii'])
+tii_in_tob = hob_frame['tii'].transform(hob_frame['tob'])
+travob_in_tii_test = hob_frame['tob'].translate_full('pos', tii_in_tob)
 print(travob_in_tii_test.vel, travob_in_tii_test.pos, travob_in_tii_test.time) # should be 80, 0, 0
 travib_in_tii_test = hob_frame['tii'].translate_full('pos', tii_frame['tii'])
 print(travib_in_tii_test.vel, travib_in_tii_test.pos, travib_in_tii_test.time) # should be 0, 0, 1
 
+tob_in_tii = hob_frame['tob'].transform(hob_frame['tii'])
+tii_frame.add_point('tob', vel=tob_in_tii.vel, pos=tob_in_tii.pos, time=tob_in_tii.time)
+cob_in_tii = hob_frame['cob'].transform(hob_frame['tii'])
+tii_frame.add_point('cob', vel=cob_in_tii.vel, pos=cob_in_tii.pos, time=cob_in_tii.time)
+t_diff_ib_ob_in_tii = tii_frame['tob'].convergence_time_with(tii_frame['cob'])
+v_tii_in_tob = v_transform(v_tii_in_hob, v_hob_in_tob)
 v_tob_in_tii = -v_tii_in_tob
 tii_frame.inertial_step_back('tii', 'tob', -t_diff_ib_ob_in_tii, v_tob_in_tii)
 travib_in_tob_test = hob_frame['tii'].translate_full('pos', tii_frame['tob'])

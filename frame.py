@@ -118,8 +118,11 @@ class Path:
         return path
 
     def add_point(self, pos, time):
-        self.pos = np.concatenate((self.pos, pos.reshape((1, 3))))
-        self.time = np.concatenate((self.time, np.array([time])))
+        #print(pos, time)
+        more = Path(pos, time)
+        self.pos = np.concatenate((self.pos, more.pos))
+        self.time = np.concatenate((self.time, more.time))
+        return Path.from_lists(more.pos, more.time)
 
     def concatenate(self, more):
         pos = np.concatenate((self.pos, more.pos))
@@ -136,6 +139,7 @@ class Path:
         new_path = self.concatenate(segment)
         self.pos = new_path.pos
         self.time = new_path.time
+        return segment
 
     def create_path(s_start, t_start, segment_durations, segment_velocities, tick_step=0.1, v_axis=0):
         t_segment = t_start
@@ -149,6 +153,17 @@ class Path:
             s_segment += segment_velocities[segment] * segment_durations[segment]
         trajectories.append(Path.from_lists([s_segment], [t_segment])) # Endpoint that is intended to be excluded from tick marks
         return Path.concatenate_list(trajectories)
+
+    def transform_path(self, new_in_old):
+        new_pos = np.zeros(self.pos.shape)
+        new_time = np.zeros(self.time.shape)
+        v_old_in_new = -new_in_old.vel
+        for i in range(len(self.pos)): # TODO: abstract away offset at least
+            pos_offset = self.pos[i] - new_in_old.pos
+            time_offset = self.time[i] - new_in_old.time
+            new_pos[i, :] = s_transform(pos_offset, v_old_in_new, time_offset)
+            new_time[i] = t_transform(time_offset, v_old_in_new, pos_offset)
+        return Path.from_lists(new_pos, new_time)
 
 # TODO: have a variable that stores paths, and a function that appends to the paths given new velocities
 class Frame():
