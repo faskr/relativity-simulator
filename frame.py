@@ -14,6 +14,8 @@ class Event:
 
 # TODO: Instead of Point, have Event(pos, time), and maybe something like Capture(vel, pos, time) or Waypoint, since it's part of a path
 # A point isn't supposed to have velocity; objects have velocity
+# TODO: Probably create a Line class, and have subclasses called Trajectory and Simultaneity; maybe give the Capture class variables of Event, Trajectory, and Simultaneity types
+
 class Point:
     def __init__(self, vel=[0,0,0], pos=[0,0,0], time=0):
         self.vel = np.array(vel, dtype=np.float32)

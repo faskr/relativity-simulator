@@ -281,15 +281,13 @@ print(cob_in_hob_test.vel, cob_in_hob_test.pos, cob_in_hob_test.time) # 0, 50, 0
 cob_in_tii_test = change_in_tob_test.translate_full('pos', hob_frame['tii'], tob_frame['hob'])
 print(cob_in_tii_test.vel, cob_in_tii_test.pos, cob_in_tii_test.time) # 50, -57.7, -1.15
 
-
-# TODO: Figure out the expected values and just make sure these are correct. Then commit and then delete this whole testing section.
 home_in_tii_test1 = hob_frame['hob'].translate_full('time', hob_frame['tii'])
-print(home_in_tii_test1.vel, home_in_tii_test1.pos, home_in_tii_test1.time)
+print(home_in_tii_test1.vel, home_in_tii_test1.pos, home_in_tii_test1.time) # 50, 0, -0.866
 home_in_tii_test2 = hob_frame['hii'].translate_full('time', tii_in_hii)
-print(home_in_tii_test2.vel, home_in_tii_test2.pos, home_in_tii_test2.time)
+print(home_in_tii_test2.vel, home_in_tii_test2.pos, home_in_tii_test2.time) # 50, 0, 0
 change_in_tii_test2 = hob_frame['cob'].translate_full('time', hob_frame['tii'], hob_frame['hob'])
-print(change_in_tii_test2.vel, change_in_tii_test2.pos, change_in_tii_test2.time)
+print(change_in_tii_test2.vel, change_in_tii_test2.pos, change_in_tii_test2.time) # 50, 50, -0.616
 change_in_tii_test3 = hob_frame['cii'].translate_full('time', tii_in_hii, hob_frame['hii'])
-print(change_in_tii_test3.vel, change_in_tii_test3.pos, change_in_tii_test3.time)
+print(change_in_tii_test3.vel, change_in_tii_test3.pos, change_in_tii_test3.time) # 50, 50, 0.25
 change_in_tob_test = cob_in_tii.translate_full('time', hob_frame['tob'], tii_frame['hob'])
-print(change_in_tob_test.vel, change_in_tob_test.pos, change_in_tob_test.time)
+print(change_in_tob_test.vel, change_in_tob_test.pos, change_in_tob_test.time) # -50, -57.7, 0.289
