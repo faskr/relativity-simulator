@@ -18,7 +18,6 @@ def dilate(x, v):
 
 # Calculate time between simultaneities due to location in space in direction of velocity
 # Over space in the direction of movement, is time going forward or backward?
-# TODO: Figure out why phase is not simply s / v
 def t_phase_simultaneities(v_a_in_b, s_in_a):
     s_in_a_mag = proj(s_in_a, v_a_in_b)
     v_a_in_b_mag = mag(v_a_in_b) # Velocity is always positive in its own direction
