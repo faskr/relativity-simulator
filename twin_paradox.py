@@ -92,7 +92,7 @@ hob_frame.paths['traveller_inertial'].add_point(hob_frame['tei'].pos, hob_frame[
 # TODO: automate & generalize a transform from an inertial frame to an accelerating frame
 #   Idea: transform hob and tob trajectories to tob frame
 #   Idea: transform hib and tib trajectories to tib frame, and then offset to get trav accel plot with overlapping home trajectories
-#   Idea: calculate this offset by taking tib *event* at tob velocity in home, and transforming it to tob frame
+#   Idea: calculate this offset by taking tib *event* in home, and transforming it along with tob trajectory to tob frame
 
 ## Initialize frame
 
