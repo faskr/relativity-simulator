@@ -16,6 +16,7 @@ class Event:
 # A point isn't supposed to have velocity; objects have velocity
 # TODO: Probably create a Line class, and have subclasses called Trajectory and Simultaneity; maybe give the Capture class variables of Event, Trajectory, and Simultaneity types
 
+# TODO: Start by simply changing the name of this class to Capture, and probably make it a subclass of Event
 class Point:
     def __init__(self, vel=[0,0,0], pos=[0,0,0], time=0):
         self.vel = np.array(vel, dtype=np.float32)

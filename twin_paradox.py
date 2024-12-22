@@ -3,6 +3,8 @@ from relativity import *
 from frame import *
 from plot_functions import *
 
+# TODO: Eventually, try to abstract away some of the least manual settings
+
 # ==== Setup ====
 
 ## Manual settings
@@ -53,6 +55,9 @@ v_tea_in_tob = v_tia_in_tob
 ### Home Plot: hob frame where velocity of hib in hob = 0
 # Note: Using hob frame for out-bound and hib frame for in-bound journey is improper, since in the case where velocity of hib in hob =/= 0, the paths would be discontinuous
 
+# TODO: Eventually, instead of inertial step and then add segment, there should be one function that inertial-steps a path
+#   This would mean that there would no longer be a need to add additional event/point elements in the frame
+
 ## Initialize frame
 
 hob_frame = Frame('hob')
@@ -83,6 +88,11 @@ hob_frame.paths['traveller_inertial'].add_point(hob_frame['tei'].pos, hob_frame[
 
 
 ### Traveller Plot
+
+# TODO: automate & generalize a transform from an inertial frame to an accelerating frame
+#   Idea: transform hob and tob trajectories to tob frame
+#   Idea: transform hib and tib trajectories to tib frame, and then offset to get trav accel plot with overlapping home trajectories
+#   Idea: calculate this offset by taking tib *event* at tob velocity in home, and transforming it to tob frame
 
 ## Initialize frame
 
@@ -128,6 +138,8 @@ path_trav_inert_in_tii = hob_frame.paths['traveller_inertial'].transform_path(ho
 path_home_inert_in_tii = hob_frame.paths['home_inertial'].transform_path(hob_frame['tii'])
 
 # ==== Output ====
+
+# TODO: changepoint path, tick marks, simultaneity segments between trajectories, light signals between trajectories
 
 # Plot journeys in home frame
 fig = plt.figure()
